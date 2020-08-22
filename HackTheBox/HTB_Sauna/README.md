@@ -1,4 +1,4 @@
-# Sauna | Hack The Box
+# Sauna | HackTheBox
 
 ### 1. Scan
 ```bash

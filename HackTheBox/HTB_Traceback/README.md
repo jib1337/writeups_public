@@ -1,4 +1,4 @@
-# Traceback | Hack The Box
+# Traceback | HackTheBox
 
 ### 1. Scan
 ```bash

@@ -1,4 +1,4 @@
-## Hack The Box | Magic
+# Magic | HackTheBox
 
 ### 1. Scan
 ```bash
