@@ -83,7 +83,7 @@ ID           Response   Lines    Word     Chars       Payload
 000001225:   302        0 L      0 W      0 Ch        "logout"
 ```
 
-Going to the page, I get redirected to the login form. However in my proxy, I can see the response did return the code for the login page, including the form that allows files to be uploaded to the server.
+Going to the page, I get redirected to the login form. However in my proxy, I can see the response did return the code for the upload page, including the form that allows files to be uploaded to the server.
 ```html
 <form action="" method="POST" enctype="multipart/form-data">
                     <div class="dropzone">
