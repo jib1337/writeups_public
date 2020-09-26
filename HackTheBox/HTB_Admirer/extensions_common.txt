@@ -1,0 +1,12 @@
+/
+.htm
+.html
+.inc
+.jhtml
+.log
+.php
+.phtml
+.shtml
+.sql
+.txt
+.xml
