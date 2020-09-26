@@ -535,7 +535,7 @@ Mode                LastWriteTime         Length Name
 -a----         7/9/2020  11:05 PM        1263880 mimikatz.exe
 ```
 First I tried running mimikatz normally - it flooded my shell with prompts and broke everything.
-After setting back up, I tried running by passing a set of arguments on what I wanted to do. We can dump the SAM file with lsadump.
+After setting back up, I tried running by passing a set of arguments on what I wanted to do. 
 Reference:
 - https://github.com/gentilkiwi/mimikatz/wiki/module-~-lsadump
 ```sh
@@ -633,7 +633,7 @@ Supplemental Credentials:
 mimikatz(commandline) # exit
 Bye!
 ```
-Mimikatz has successfully dumped the SAM file, with the hashed Administrator password to the sreen.
+Mimikatz has successfully dumped the LSA secrets, with the hashed Administrator password to the sreen.
 
 ### 10. Access the admin account
 With the hashes dumped, they can now be used to get a shell as system.
