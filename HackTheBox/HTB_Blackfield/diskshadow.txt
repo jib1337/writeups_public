@@ -1,0 +1,5 @@
+set context persistent nowriters  
+set metadata C:\Users\svc_backup\Links\jib1337\metadata.cab  
+add volume C: alias someAlias  
+create  
+expose %someAlias% K:  
