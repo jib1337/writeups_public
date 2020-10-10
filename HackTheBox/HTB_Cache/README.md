@@ -126,8 +126,8 @@ References:
 - https://www.open-emr.org/wiki/images/1/11/Openemr_insecurity.pdf
 - https://www.binarytides.com/sqlmap-hacking-tutorial/
 
-When googling I first found the Medium article, which led me to investigating two other exploits after reading the following:
-*/For the exploit to work you must have the correct credential and this can be done by performing a SQL Injection on that particular version of the application. SQL Injection in add_edit_event_user.php is caused by unsanitized user input from the ​eid​, userid​, and ​pid​ parameters. Exploiting this vulnerability requires authentication to Patient Portal; however, it can be exploited without authentication when combined with the Patient Portal authentication bypass.*
+When googling I first found the Medium article, which led me to investigating two other exploits after reading the following:  
+*For the exploit to work you must have the correct credential and this can be done by performing a SQL Injection on that particular version of the application. SQL Injection in add_edit_event_user.php is caused by unsanitized user input from the ​eid​, userid​, and ​pid​ parameters. Exploiting this vulnerability requires authentication to Patient Portal; however, it can be exploited without authentication when combined with the Patient Portal authentication bypass.*
 
 In an attempt to find the patient portal I navigate to http://hms.htb/portal/ which shows a message "Patient Portal is turned off".
 Following the vulnerability outline in the second link, I go to http://hms.htb/portal/account/register.php and get redirected back to the main login page via javascript. So to proceed, I turn javascript off via Burp.  
