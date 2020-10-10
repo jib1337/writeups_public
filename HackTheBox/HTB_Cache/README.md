@@ -1,4 +1,4 @@
-## Cache | HackTheBox
+# Cache | HackTheBox
 
 ### 1. Scan
 ```bash
