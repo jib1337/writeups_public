@@ -1,0 +1,11 @@
+GET /gallery/gallery.php?id=1&sort=photoid HTTP/1.1
+Host: kioptrix3.com
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101 Firefox/68.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Referer: http://kioptrix3.com/gallery/g.php/1
+Connection: close
+Cookie: PHPSESSID=fb62e1b51b23329f0f36dbd6975ce479
+Upgrade-Insecure-Requests: 1
+

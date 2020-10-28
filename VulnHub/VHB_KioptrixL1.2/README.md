@@ -1,4 +1,4 @@
-# Kioptrix Level 2 | VulnHub
+# Kioptrix Level 1.2 | VulnHub
 https://www.vulnhub.com/entry/kioptrix-level-11-2,23/
 
 ### 1. Scan
