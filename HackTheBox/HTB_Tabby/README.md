@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 # Tabby | HackTheBox
-=======
-# Tabby | Hack The Box
->>>>>>> b87f06e415b6f89b91bb8ca3e722f6606cce131e
 
 ### 1. Scan
 ```bash
