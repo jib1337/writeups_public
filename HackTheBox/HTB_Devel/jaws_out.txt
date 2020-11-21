@@ -1,0 +1,840 @@
+﻿############################################################
+##     J.A.W.S. (Just Another Windows Enum Script)        ##
+##                                                        ##
+##           https://github.com/411Hall/JAWS              ##
+##                                                        ##
+############################################################
+
+Windows Version: Microsoft Windows 7 Enterprise 
+Architecture: x86
+Hostname: DEVEL
+Current User: Web
+Current Time\Date: 11/24/2020 22:23:29
+
+-----------------------------------------------------------
+ Users
+-----------------------------------------------------------
+----------
+Username: Administrator
+Groups:   Administrators
+----------
+Username: babis
+Groups:   Users
+----------
+Username: Guest
+Groups:   Guests
+
+-----------------------------------------------------------
+ Network Information
+-----------------------------------------------------------
+
+Windows IP Configuration
+
+
+Ethernet adapter Local Area Connection 4:
+
+   Connection-specific DNS Suffix  . : .htb
+   IPv6 Address. . . . . . . . . . . : dead:beef::a9ed:17c2:b2c6:7786
+   Temporary IPv6 Address. . . . . . : dead:beef::a49c:8d8c:2067:acb3
+   Link-local IPv6 Address . . . . . : fe80::a9ed:17c2:b2c6:7786%19
+   IPv4 Address. . . . . . . . . . . : 10.129.45.183
+   Subnet Mask . . . . . . . . . . . : 255.255.0.0
+   Default Gateway . . . . . . . . . : fe80::250:56ff:feb9:6ae3%19
+                                       10.129.0.1
+
+Tunnel adapter isatap..htb:
+
+   Media State . . . . . . . . . . . : Media disconnected
+   Connection-specific DNS Suffix  . : .htb
+
+Tunnel adapter Local Area Connection* 9:
+
+   Media State . . . . . . . . . . . : Media disconnected
+   Connection-specific DNS Suffix  . : 
+
+-----------------------------------------------------------
+ Arp
+-----------------------------------------------------------
+
+Interface: 10.129.45.183 --- 0x13
+  Internet Address      Physical Address      Type
+  10.129.0.1            00-50-56-b9-6a-e3     dynamic   
+  10.129.255.255        ff-ff-ff-ff-ff-ff     static    
+  224.0.0.22            01-00-5e-00-00-16     static    
+  224.0.0.252           01-00-5e-00-00-fc     static    
+  255.255.255.255       ff-ff-ff-ff-ff-ff     static    
+
+
+-----------------------------------------------------------
+ NetStat
+-----------------------------------------------------------
+
+Active Connections
+
+  Proto  Local Address          Foreign Address        State           PID
+  TCP    0.0.0.0:21             0.0.0.0:0              LISTENING       1420
+  TCP    0.0.0.0:80             0.0.0.0:0              LISTENING       4
+  TCP    0.0.0.0:135            0.0.0.0:0              LISTENING       684
+  TCP    0.0.0.0:445            0.0.0.0:0              LISTENING       4
+  TCP    0.0.0.0:5357           0.0.0.0:0              LISTENING       4
+  TCP    0.0.0.0:49152          0.0.0.0:0              LISTENING       396
+  TCP    0.0.0.0:49153          0.0.0.0:0              LISTENING       736
+  TCP    0.0.0.0:49154          0.0.0.0:0              LISTENING       900
+  TCP    0.0.0.0:49155          0.0.0.0:0              LISTENING       500
+  TCP    0.0.0.0:49156          0.0.0.0:0              LISTENING       508
+  TCP    10.129.45.183:80       10.10.14.32:54540      ESTABLISHED     4
+  TCP    10.129.45.183:80       10.10.14.32:54542      ESTABLISHED     4
+  TCP    10.129.45.183:139      0.0.0.0:0              LISTENING       4
+  TCP    10.129.45.183:49158    10.10.14.32:9999       ESTABLISHED     3356
+  TCP    [::]:21                [::]:0                 LISTENING       1420
+  TCP    [::]:80                [::]:0                 LISTENING       4
+  TCP    [::]:135               [::]:0                 LISTENING       684
+  TCP    [::]:445               [::]:0                 LISTENING       4
+  TCP    [::]:5357              [::]:0                 LISTENING       4
+  TCP    [::]:49152             [::]:0                 LISTENING       396
+  TCP    [::]:49153             [::]:0                 LISTENING       736
+  TCP    [::]:49154             [::]:0                 LISTENING       900
+  TCP    [::]:49155             [::]:0                 LISTENING       500
+  TCP    [::]:49156             [::]:0                 LISTENING       508
+  UDP    0.0.0.0:3702           *:*                                    1384
+  UDP    0.0.0.0:3702           *:*                                    1384
+  UDP    0.0.0.0:5355           *:*                                    1084
+  UDP    0.0.0.0:49152          *:*                                    1384
+  UDP    10.129.45.183:137      *:*                                    4
+  UDP    10.129.45.183:138      *:*                                    4
+  UDP    [::]:3702              *:*                                    1384
+  UDP    [::]:3702              *:*                                    1384
+  UDP    [::]:5355              *:*                                    1084
+  UDP    [::]:49153             *:*                                    1384
+
+
+-----------------------------------------------------------
+ Firewall Status
+-----------------------------------------------------------
+
+Firwall is Enabled
+
+-----------------------------------------------------------
+ FireWall Rules
+-----------------------------------------------------------
+
+Name                       LocalPorts                 ApplicationName          
+----                       ----------                 ---------------          
+File and Printer Sharin...                                                     
+PING                                                                           
+Remote Assistance (TCP-In) *                          C:\Windows\system32\ms...
+Remote Assistance (RA S... *                          C:\Windows\system32\ra...
+Core Networking - Dynam... 68                         C:\Windows\system32\sv...
+Core Networking - Dynam... 546                        C:\Windows\system32\sv...
+Core Networking - Tered... Teredo                     C:\Windows\system32\sv...
+FTP Server (FTP Traffic... 21                         C:\Windows\system32\sv...
+FTP Server Passive (FTP... 1024-65535                 C:\Windows\system32\sv...
+FTP Server Secure (FTP ... 990                        C:\Windows\system32\sv...
+Network Discovery (LLMN... 5355                       C:\Windows\system32\sv...
+Network Discovery (Pub-... 3702                       C:\Windows\system32\sv...
+Network Discovery (SSDP... 1900                       C:\Windows\system32\sv...
+Network Discovery (WSD-In) 3702                       C:\Windows\system32\sv...
+Remote Assistance (DCOM... 135                        C:\Windows\system32\sv...
+Remote Assistance (PNRP... 3540                       C:\Windows\system32\sv...
+Remote Assistance (SSDP... 2869                       C:\Windows\system32\sv...
+Remote Assistance (SSDP... 1900                       C:\Windows\system32\sv...
+Core Networking - Desti...                            System                   
+Core Networking - Desti...                            System                   
+Core Networking - Inter...                            System                   
+Core Networking - IPHTT... IPHTTPS                    System                   
+Core Networking - IPv6 ...                            System                   
+Core Networking - Multi...                            System                   
+Core Networking - Multi...                            System                   
+Core Networking - Multi...                            System                   
+Core Networking - Multi...                            System                   
+Core Networking - Neigh...                            System                   
+Core Networking - Neigh...                            System                   
+Core Networking - Packe...                            System                   
+Core Networking - Param...                            System                   
+Core Networking - Route...                            System                   
+Core Networking - Route...                            System                   
+Core Networking - Time ...                            System                   
+Network Discovery (NB-D... 138                        System                   
+Network Discovery (NB-N... 137                        System                   
+Network Discovery (UPnP... 2869                       System                   
+Network Discovery (WSD ... 5357                       System                   
+Network Discovery (WSD ... 5358                       System                   
+World Wide Web Services... 80                         System                   
+Core Networking - Multi...                                                     
+Core Networking - Multi...                                                     
+Core Networking - Multi...                                                     
+Core Networking - Multi...                                                     
+Core Networking - Neigh...                                                     
+Core Networking - Neigh...                                                     
+Core Networking - Packe...                                                     
+Core Networking - Param...                                                     
+Core Networking - Route...                                                     
+Core Networking - Route...                                                     
+Core Networking - Time ...                                                     
+Core Networking - Group... *                          C:\Windows\system32\ls...
+Remote Assistance (TCP-... *                          C:\Windows\system32\ms...
+Remote Assistance (RA S... *                          C:\Windows\system32\ra...
+Core Networking - DNS (... *                          C:\Windows\system32\sv...
+Core Networking - Dynam... 68                         C:\Windows\system32\sv...
+Core Networking - Dynam... 546                        C:\Windows\system32\sv...
+Core Networking - Group... *                          C:\Windows\system32\sv...
+Core Networking - IPHTT... *                          C:\Windows\system32\sv...
+Core Networking - Tered... *                          C:\Windows\system32\sv...
+FTP Server (FTP Traffic... 20                         C:\Windows\system32\sv...
+FTP Server Secure (FTP ... 989                        C:\Windows\system32\sv...
+Network Discovery (LLMN... *                          C:\Windows\system32\sv...
+Network Discovery (Pub ... *                          C:\Windows\system32\sv...
+Network Discovery (SSDP... *                          C:\Windows\system32\sv...
+Network Discovery (UPnP... *                          C:\Windows\system32\sv...
+Network Discovery (WSD-... *                          C:\Windows\system32\sv...
+Remote Assistance (PNRP... *                          C:\Windows\system32\sv...
+Remote Assistance (SSDP... *                          C:\Windows\system32\sv...
+Remote Assistance (SSDP... *                          C:\Windows\system32\sv...
+Core Networking - Group... *                          System                   
+Core Networking - Inter...                            System                   
+Core Networking - IPv6 ...                            System                   
+Network Discovery (NB-D... *                          System                   
+Network Discovery (NB-N... *                          System                   
+Network Discovery (UPnP... *                          System                   
+Network Discovery (WSD ... *                          System                   
+Network Discovery (WSD ... *                          System                   
+
+
+-----------------------------------------------------------
+ Hosts File Content
+-----------------------------------------------------------
+
+# Copyright (c) 1993-2009 Microsoft Corp.
+#
+# This is a sample HOSTS file used by Microsoft TCP/IP for Windows.
+#
+# This file contains the mappings of IP addresses to host names. Each
+# entry should be kept on an individual line. The IP address should
+# be placed in the first column followed by the corresponding host name.
+# The IP address and the host name should be separated by at least one
+# space.
+#
+# Additionally, comments (such as these) may be inserted on individual
+# lines or following the machine name denoted by a '#' symbol.
+#
+# For example:
+#
+#      102.54.94.97     rhino.acme.com          # source server
+#       38.25.63.10     x.acme.com              # x client host
+
+# localhost name resolution is handled within DNS itself.
+#	127.0.0.1       localhost
+#	::1             localhost
+
+
+-----------------------------------------------------------
+ Processes
+-----------------------------------------------------------
+
+Name                   ProcessID Owner CommandLine                             
+----                   --------- ----- -----------                             
+cmd.exe                     3892 Web   C:\Windows\system32\cmd.exe             
+conhost.exe                 3900 Web   \??\C:\Windows\system32\conhost.exe     
+csrss.exe                    408                                               
+csrss.exe                    344                                               
+dllhost.exe                 1976                                               
+LogonUI.exe                  808                                               
+lsass.exe                    508                                               
+lsm.exe                      516                                               
+msdtc.exe                   1956                                               
+powershell.exe              3972 Web   powershell  -ExecutionPolicy Bypass -Fil
+                                       e ./jaws.ps1 -OutputFile jaws_out.txt   
+SearchFilterHost.exe        3808                                               
+SearchIndexer.exe           2756                                               
+SearchProtocolHost.exe      3776                                               
+services.exe                 500                                               
+smss.exe                     264                                               
+spoolsv.exe                 1184                                               
+sppsvc.exe                  2620                                               
+svchost.exe                 1384                                               
+svchost.exe                 1420                                               
+svchost.exe                 2660                                               
+svchost.exe                 1572                                               
+svchost.exe                  856                                               
+svchost.exe                  900                                               
+svchost.exe                 1012                                               
+svchost.exe                  620                                               
+svchost.exe                  684                                               
+svchost.exe                  736                                               
+svchost.exe                 1308                                               
+svchost.exe                 1084                                               
+svchost.exe                 1220                                               
+System                         4                                               
+System Idle Process            0                                               
+VGAuthService.exe           1508                                               
+vmtoolsd.exe                1536                                               
+w3wp.exe                    3356 Web   c:\windows\system32\inetsrv\w3wp.exe -ap
+                                        "Web" -v "v2.0" -l "webengine4.dll" -a 
+                                       \\.\pipe\iisipmf7cf4394-8df0-4e5b-ac23-a
+                                       e170faffe77 -h "C:\inetpub\temp\apppools
+                                       \Web.config" -w "" -m 0 -t 20           
+wininit.exe                  396                                               
+winlogon.exe                 464                                               
+WmiApSrv.exe                3072                                               
+WmiPrvSE.exe                1948                                               
+WmiPrvSE.exe                2160                                               
+
+
+
+-----------------------------------------------------------
+ Scheduled Tasks
+-----------------------------------------------------------
+Current System Time: 11/24/2020 22:23:32
+
+TaskName    : \Microsoft\Windows\Active Directory Rights Management Services Cl
+              ient\AD RMS Rights Policy Template Management (Automated)
+Run As User : Everyone
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\Active Directory Rights Management Services Cl
+              ient\AD RMS Rights Policy Template Management (Automated)
+Run As User : Everyone
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\Active Directory Rights Management Services Cl
+              ient\AD RMS Rights Policy Template Management (Manual)
+Run As User : Everyone
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\Autochk\Proxy
+Run As User : LOCAL SERVICE
+Task To Run : %windir%\system32\rundll32.exe /d acproxy.dll,PerformAutochkOpera
+              tions
+
+TaskName    : \Microsoft\Windows\Customer Experience Improvement Program\Consol
+              idator
+Run As User : SYSTEM
+Task To Run : %SystemRoot%\System32\wsqmcons.exe 
+
+TaskName    : \Microsoft\Windows\Customer Experience Improvement Program\Kernel
+              CeipTask
+Run As User : LOCAL SERVICE
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\Customer Experience Improvement Program\UsbCei
+              p
+Run As User : LOCAL SERVICE
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\Defrag\ScheduledDefrag
+Run As User : SYSTEM
+Task To Run : %windir%\system32\defrag.exe -c
+
+TaskName    : \Microsoft\Windows\Diagnosis\Scheduled
+Run As User : INTERACTIVE
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\DiskDiagnostic\Microsoft-Windows-DiskDiagnosti
+              cDataCollector
+Run As User : SYSTEM
+Task To Run : %windir%\system32\rundll32.exe dfdts.dll,DfdGetDefaultPolicyAndSM
+              ART
+
+TaskName    : \Microsoft\Windows\DiskDiagnostic\Microsoft-Windows-DiskDiagnosti
+              cResolver
+Run As User : Users
+Task To Run : %windir%\system32\DFDWiz.exe 
+
+TaskName    : \Microsoft\Windows\Location\Notifications
+Run As User : Authenticated Users
+Task To Run : %windir%\System32\LocationNotifications.exe 
+
+TaskName    : \Microsoft\Windows\Maintenance\WinSAT
+Run As User : Administrators
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\Media Center\ActivateWindowsSearch
+Run As User : SYSTEM
+Task To Run : %SystemRoot%\ehome\ehPrivJob.exe /DoActivateWindowsSearch
+
+TaskName    : \Microsoft\Windows\Media Center\ConfigureInternetTimeService
+Run As User : SYSTEM
+Task To Run : %SystemRoot%\ehome\ehPrivJob.exe /DoConfigureInternetTimeService
+
+TaskName    : \Microsoft\Windows\Media Center\DispatchRecoveryTasks
+Run As User : SYSTEM
+Task To Run : %SystemRoot%\ehome\ehPrivJob.exe /DoRecoveryTasks $(Arg0)
+
+TaskName    : \Microsoft\Windows\Media Center\ehDRMInit
+Run As User : LOCAL SERVICE
+Task To Run : %SystemRoot%\ehome\ehPrivJob.exe /DRMInit
+
+TaskName    : \Microsoft\Windows\Media Center\InstallPlayReady
+Run As User : SYSTEM
+Task To Run : %SystemRoot%\ehome\ehPrivJob.exe /InstallPlayReady $(Arg0)
+
+TaskName    : \Microsoft\Windows\Media Center\mcupdate
+Run As User : NETWORK SERVICE
+Task To Run : %SystemRoot%\ehome\mcupdate $(Arg0)
+
+TaskName    : \Microsoft\Windows\Media Center\MediaCenterRecoveryTask
+Run As User : SYSTEM
+Task To Run : Multiple actions
+
+TaskName    : \Microsoft\Windows\Media Center\ObjectStoreRecoveryTask
+Run As User : NETWORK SERVICE
+Task To Run : Multiple actions
+
+TaskName    : \Microsoft\Windows\Media Center\OCURActivate
+Run As User : SYSTEM
+Task To Run : %SystemRoot%\ehome\ehPrivJob.exe /OCURActivate
+
+TaskName    : \Microsoft\Windows\Media Center\OCURDiscovery
+Run As User : SYSTEM
+Task To Run : %SystemRoot%\ehome\ehPrivJob.exe /OCURDiscovery $(Arg0)
+
+TaskName    : \Microsoft\Windows\Media Center\PBDADiscovery
+Run As User : SYSTEM
+Task To Run : %SystemRoot%\ehome\ehPrivJob.exe /PBDADiscovery
+
+TaskName    : \Microsoft\Windows\Media Center\PBDADiscoveryW1
+Run As User : SYSTEM
+Task To Run : %SystemRoot%\ehome\ehPrivJob.exe /wait:7 /PBDADiscovery
+
+TaskName    : \Microsoft\Windows\Media Center\PBDADiscoveryW2
+Run As User : SYSTEM
+Task To Run : %SystemRoot%\ehome\ehPrivJob.exe /wait:90 /PBDADiscovery
+
+TaskName    : \Microsoft\Windows\Media Center\PeriodicScanRetry
+Run As User : NETWORK SERVICE
+Task To Run : %windir%\ehome\MCUpdate.exe -pscn 0
+
+TaskName    : \Microsoft\Windows\Media Center\PvrRecoveryTask
+Run As User : NETWORK SERVICE
+Task To Run : Multiple actions
+
+TaskName    : \Microsoft\Windows\Media Center\PvrScheduleTask
+Run As User : NETWORK SERVICE
+Task To Run : Multiple actions
+
+TaskName    : \Microsoft\Windows\Media Center\RecordingRestart
+Run As User : NETWORK SERVICE
+Task To Run : %SystemRoot%\ehome\ehrec /RestartRecording
+
+TaskName    : \Microsoft\Windows\Media Center\RegisterSearch
+Run As User : SYSTEM
+Task To Run : %SystemRoot%\ehome\ehPrivJob.exe /DoRegisterSearch $(Arg0)
+
+TaskName    : \Microsoft\Windows\Media Center\ReindexSearchRoot
+Run As User : SYSTEM
+Task To Run : %SystemRoot%\ehome\ehPrivJob.exe /DoReindexSearchRoot
+
+TaskName    : \Microsoft\Windows\Media Center\SqlLiteRecoveryTask
+Run As User : NETWORK SERVICE
+Task To Run : Multiple actions
+
+TaskName    : \Microsoft\Windows\Media Center\UpdateRecordPath
+Run As User : SYSTEM
+Task To Run : %SystemRoot%\ehome\ehPrivJob.exe /DoUpdateRecordPath $(Arg0)
+
+TaskName    : \Microsoft\Windows\MemoryDiagnostic\CorruptionDetector
+Run As User : Users
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\MemoryDiagnostic\DecompressionFailureDetector
+Run As User : Users
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\MobilePC\HotStart
+Run As User : Authenticated Users
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\MUI\LPRemove
+Run As User : SYSTEM
+Task To Run : %windir%\system32\lpremove.exe 
+
+TaskName    : \Microsoft\Windows\Multimedia\SystemSoundsService
+Run As User : Users
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\NetTrace\GatherNetworkInfo
+Run As User : Users
+Task To Run : %windir%\system32\gatherNetworkInfo.vbs 
+
+TaskName    : \Microsoft\Windows\Offline Files\Background Synchronization
+Run As User : Authenticated Users
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\Offline Files\Logon Synchronization
+Run As User : Authenticated Users
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\Power Efficiency Diagnostics\AnalyzeSystem
+Run As User : SYSTEM
+Task To Run : %SystemRoot%\System32\powercfg.exe -energy -auto
+
+TaskName    : \Microsoft\Windows\RAC\RacTask
+Run As User : LOCAL SERVICE
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\RAC\RacTask
+Run As User : LOCAL SERVICE
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\Shell\WindowsParentalControls
+Run As User : Authenticated Users
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\Shell\WindowsParentalControlsMigration
+Run As User : SYSTEM
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\SideShow\AutoWake
+Run As User : LOCAL SERVICE
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\SideShow\GadgetManager
+Run As User : Users
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\SideShow\SessionAgent
+Run As User : Users
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\SideShow\SystemDataProviders
+Run As User : LOCAL SERVICE
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\SystemRestore\SR
+Run As User : SYSTEM
+Task To Run : %windir%\system32\rundll32.exe /d srrstr.dll,ExecuteScheduledSPPC
+              reation
+
+TaskName    : \Microsoft\Windows\SystemRestore\SR
+Run As User : SYSTEM
+Task To Run : %windir%\system32\rundll32.exe /d srrstr.dll,ExecuteScheduledSPPC
+              reation
+
+TaskName    : \Microsoft\Windows\Tcpip\IpAddressConflict1
+Run As User : Users
+Task To Run : %windir%\system32\rundll32.exe ndfapi.dll,NdfRunDllDuplicateIPOff
+              endingSystem
+
+TaskName    : \Microsoft\Windows\Tcpip\IpAddressConflict2
+Run As User : Users
+Task To Run : %windir%\system32\rundll32.exe ndfapi.dll,NdfRunDllDuplicateIPDef
+              endingSystem
+
+TaskName    : \Microsoft\Windows\TextServicesFramework\MsCtfMonitor
+Run As User : Users
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\Time Synchronization\SynchronizeTime
+Run As User : LOCAL SERVICE
+Task To Run : %windir%\system32\sc.exe start w32time task_started
+
+TaskName    : \Microsoft\Windows\Windows Error Reporting\QueueReporting
+Run As User : Users
+Task To Run : %windir%\system32\wermgr.exe -queuereporting
+
+TaskName    : \Microsoft\Windows\Windows Filtering Platform\BfeOnServiceStartTy
+              peChange
+Run As User : SYSTEM
+Task To Run : %windir%\system32\rundll32.exe bfe.dll,BfeOnServiceStartTypeChang
+              e
+
+TaskName    : \Microsoft\Windows\Windows Media Sharing\UpdateLibrary
+Run As User : Authenticated Users
+Task To Run : %ProgramFiles%\Windows Media Player\wmpnscfg.exe" "
+
+TaskName    : \Microsoft\Windows\WindowsBackup\ConfigNotification
+Run As User : LOCAL SERVICE
+Task To Run : %systemroot%\System32\sdclt.exe /CONFIGNOTIFICATION
+
+TaskName    : \Microsoft\Windows\WindowsColorSystem\Calibration Loader
+Run As User : Users
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows\WindowsColorSystem\Calibration Loader
+Run As User : Users
+Task To Run : COM handler
+
+TaskName    : \Microsoft\Windows Defender\MP Scheduled Scan
+Run As User : SYSTEM
+Task To Run : c:\program files\windows defender\MpCmdRun.exe Scan -ScheduleJob 
+              -WinTask -RestrictPrivilegesScan
+
+
+
+
+-----------------------------------------------------------
+ Services
+-----------------------------------------------------------
+
+Name                           DisplayName                                             Status
+----                           -----------                                             ------
+SCardSvr                       Smart Card                                             Stopped
+SCPolicySvc                    Smart Card Removal Policy                              Stopped
+SDRSVC                         Windows Backup                                         Stopped
+RpcLocator                     Remote Procedure Call (RPC) Locator                    Stopped
+RasMan                         Remote Access Connection Manager                       Stopped
+RemoteAccess                   Routing and Remote Access                              Stopped
+RemoteRegistry                 Remote Registry                                        Stopped
+SNMPTRAP                       SNMP Trap                                              Stopped
+sppuinotify                    SPP Notification Service                               Stopped
+SstpSvc                        Secure Socket Tunneling Protocol Service               Stopped
+SharedAccess                   Internet Connection Sharing (ICS)                      Stopped
+seclogon                       Secondary Logon                                        Stopped
+SensrSvc                       Adaptive Brightness                                    Stopped
+SessionEnv                     Remote Desktop Configuration                           Stopped
+NetTcpPortSharing              Net.Tcp Port Sharing Service                           Stopped
+p2pimsvc                       Peer Networking Identity Manager                       Stopped
+p2psvc                         Peer Networking Grouping                               Stopped
+Netman                         Network Connections                                    Stopped
+msiserver                      Windows Installer                                      Stopped
+napagent                       Network Access Protection Agent                        Stopped
+Netlogon                       Netlogon                                               Stopped
+WwanSvc                        WWAN AutoConfig                                        Stopped
+ProtectedStorage               Protected Storage                                      Stopped
+RasAuto                        Remote Access Auto Connection Manager                  Stopped
+PNRPsvc                        Peer Name Resolution Protocol                          Stopped
+PcaSvc                         Program Compatibility Assistant Service                Stopped
+PeerDistSvc                    BranchCache                                            Stopped
+pla                            Performance Logs & Alerts                              Stopped
+StiSvc                         Windows Image Acquisition (WIA)                        Stopped
+WebClient                      WebClient                                              Stopped
+Wecsvc                         Windows Event Collector                                Stopped
+wercplsupport                  Problem Reports and Solutions Control Panel Support    Stopped
+WcsPlugInService               Windows Color System                                   Stopped
+W32Time                        Windows Time                                           Stopped
+wbengine                       Block Level Backup Engine Service                      Stopped
+WbioSrvc                       Windows Biometric Service                              Stopped
+WPCSvc                         Parental Controls                                      Stopped
+WPDBusEnum                     Portable Device Enumerator Service                     Stopped
+wudfsvc                        Windows Driver Foundation - User-mode Driver Framework Stopped
+WMPNetworkSvc                  Windows Media Player Network Sharing Service           Stopped
+WerSvc                         Windows Error Reporting Service                        Stopped
+WinRM                          Windows Remote Management (WS-Management)              Stopped
+Wlansvc                        WLAN AutoConfig                                        Stopped
+TBS                            TPM Base Services                                      Stopped
+TermService                    Remote Desktop Services                                Stopped
+THREADORDER                    Thread Ordering Server                                 Stopped
+TapiSrv                        Telephony                                              Stopped
+StorSvc                        Storage Service                                        Stopped
+swprv                          Microsoft Software Shadow Copy Provider                Stopped
+TabletInputService             Tablet PC Input Service                                Stopped
+vds                            Virtual Disk                                           Stopped
+vmvss                          VMware Snapshot Provider                               Stopped
+VSS                            Volume Shadow Copy                                     Stopped
+VaultSvc                       Credential Manager                                     Stopped
+TrustedInstaller               Windows Modules Installer                              Stopped
+UI0Detect                      Interactive Services Detection                         Stopped
+UmRdpService                   Remote Desktop Services UserMode Port Redirector       Stopped
+EapHost                        Extensible Authentication Protocol                     Stopped
+EFS                            Encrypting File System (EFS)                           Stopped
+ehRecvr                        Windows Media Center Receiver Service                  Stopped
+clr_optimization_v2.0.50727_32 Microsoft .NET Framework NGEN v2.0.50727_X86           Stopped
+defragsvc                      Disk Defragmenter                                      Stopped
+dot3svc                        Wired AutoConfig                                       Stopped
+FontCache                      Windows Font Cache Service                             Stopped
+FontCache3.0.0.0               Windows Presentation Foundation Font Cache 3.0.0.0     Stopped
+hidserv                        Human Interface Device Access                          Stopped
+ehSched                        Windows Media Center Scheduler Service                 Stopped
+Fax                            Fax                                                    Stopped
+fdPHost                        Function Discovery Provider Host                       Stopped
+Appinfo                        Application Information                                Stopped
+AppMgmt                        Application Management                                 Stopped
+aspnet_state                   ASP.NET State Service                                  Stopped
+PolicyAgent                    IPsec Policy Agent                                     Stopped
+ALG                            Application Layer Gateway Service                      Stopped
+AppIDSvc                       Application Identity                                   Stopped
+Browser                        Computer Browser                                       Stopped
+bthserv                        Bluetooth Support Service                              Stopped
+CertPropSvc                    Certificate Propagation                                Stopped
+AxInstSV                       ActiveX Installer (AxInstSV)                           Stopped
+BDESVC                         BitLocker Drive Encryption Service                     Stopped
+BITS                           Background Intelligent Transfer Service                Stopped
+HomeGroupProvider              HomeGroup Provider                                     Stopped
+lltdsvc                        Link-Layer Topology Discovery Mapper                   Stopped
+HomeGroupListener              HomeGroup Listener                                     Stopped
+idsvc                          Windows CardSpace                                      Stopped
+KeyIso                         CNG Key Isolation                                      Stopped
+Mcx2Svc                        Media Center Extender Service                          Stopped
+MMCSS                          Multimedia Class Scheduler                             Stopped
+MSiSCSI                        Microsoft iSCSI Initiator Service                      Stopped
+KtmRm                          KtmRm for Distributed Transaction Coordinator          Stopped
+IKEEXT                         IKE and AuthIP IPsec Keying Modules                    Stopped
+hkmsvc                         Health Key and Certificate Management                  Stopped
+WdiServiceHost                 Diagnostic Service Host                                Running
+nsi                            Network Store Interface Service                        Running
+NlaSvc                         Network Location Awareness                             Running
+WdiSystemHost                  Diagnostic System Host                                 Running
+BFE                            Base Filtering Engine                                  Running
+LanmanServer                   Server                                                 Running
+W3SVC                          World Wide Web Publishing Service                      Running
+LanmanWorkstation              Workstation                                            Running
+lmhosts                        TCP/IP NetBIOS Helper                                  Running
+VMTools                        VMware Tools                                           Running
+WAS                            Windows Process Activation Service                     Running
+AppHostSvc                     Application Host Helper Service                        Running
+MpsSvc                         Windows Firewall                                       Running
+wmiApSrv                       WMI Performance Adapter                                Running
+MSDTC                          Distributed Transaction Coordinator                    Running
+wuauserv                       Windows Update                                         Running
+WSearch                        Windows Search                                         Running
+wscsvc                         Security Center                                        Running
+WinDefend                      Windows Defender                                       Running
+AudioEndpointBuilder           Windows Audio Endpoint Builder                         Running
+Audiosrv                       Windows Audio                                          Running
+AeLookupSvc                    Application Experience                                 Running
+netprofm                       Network List Service                                   Running
+Winmgmt                        Windows Management Instrumentation                     Running
+WinHttpAutoProxySvc            WinHTTP Web Proxy Auto-Discovery Service               Running
+EventSystem                    COM+ Event System                                      Running
+ShellHWDetection               Shell Hardware Detection                               Running
+FDResPub                       Function Discovery Resource Publication                Running
+Spooler                        Print Spooler                                          Running
+ProfSvc                        User Profile Service                                   Running
+eventlog                       Windows Event Log                                      Running
+sppsvc                         Software Protection                                    Running
+SamSs                          Security Accounts Manager                              Running
+RpcSs                          Remote Procedure Call (RPC)                            Running
+RpcEptMapper                   RPC Endpoint Mapper                                    Running
+gpsvc                          Group Policy Client                                    Running
+SENS                           System Event Notification Service                      Running
+ftpsvc                         Microsoft FTP Service                                  Running
+Schedule                       Task Scheduler                                         Running
+Power                          Power                                                  Running
+CscService                     Offline Files                                          Running
+DcomLaunch                     DCOM Server Process Launcher                           Running
+TrkWks                         Distributed Link Tracking Client                       Running
+CryptSvc                       Cryptographic Services                                 Running
+VGAuthService                  VMware Alias Manager and Ticket Service                Running
+COMSysApp                      COM+ System Application                                Running
+UxSms                          Desktop Window Manager Session Manager                 Running
+DPS                            Diagnostic Policy Service                              Running
+SysMain                        Superfetch                                             Running
+iphlpsvc                       IP Helper                                              Running
+Dnscache                       DNS Client                                             Running
+PlugPlay                       Plug and Play                                          Running
+Themes                         Themes                                                 Running
+Dhcp                           DHCP Client                                            Running
+
+
+
+
+-----------------------------------------------------------
+ Installed Programs
+-----------------------------------------------------------
+
+VMware Tools                                                   10.1.7.5541682 VMware Tools                                                  
+Microsoft Visual C++ 2008 Redistributable - x86 9.0.30729.6161 9.0.30729.6161 Microsoft Visual C++ 2008 Redistributable - x86 9.0.30729.6161
+
+
+
+-----------------------------------------------------------
+ Installed Patches
+-----------------------------------------------------------
+
+-----------------------------------------------------------
+ Program Folders
+-----------------------------------------------------------
+
+C:\Program Files
+-------------
+Common Files            
+DVD Maker               
+Internet Explorer       
+MSBuild                 
+Reference Assemblies    
+VMware                  
+Windows Defender        
+Windows Journal         
+Windows Mail            
+Windows Media Player    
+Windows NT              
+Windows Photo Viewer    
+Windows Portable Devices
+Windows Sidebar         
+
+
+C:\Program Files (x86)
+-------------------
+-----------------------------------------------------------
+ Files with Full Control and Modify Access
+-----------------------------------------------------------
+
+C:\Users\Public\jaws.ps1    
+C:\Users\Public\jaws_out.txt
+
+
+
+Failed to read more files
+-----------------------------------------------------------
+ Folders with Full Control and Modify Access
+-----------------------------------------------------------
+
+Failed to read more folders
+
+Failed to read more folders
+
+Failed to read more folders
+
+-----------------------------------------------------------
+ Mapped Drives
+-----------------------------------------------------------
+
+A:                 
+C:                 
+D:                 
+
+
+-----------------------------------------------------------
+ Unquoted Service Paths
+-----------------------------------------------------------
+
+-----------------------------------------------------------
+ Recent Documents
+-----------------------------------------------------------
+
+-----------------------------------------------------------
+ Potentially Interesting Files in Users Directory 
+-----------------------------------------------------------
+C:\Users\Public\jaws.ps1
+C:\Users\Public\jaws_out.txt
+
+-----------------------------------------------------------
+ 10 Last Modified Files in C:\User
+-----------------------------------------------------------
+C:\Users\Public\Documents
+C:\Users\Public\Recorded TV\Sample Media\win7_scenic-demoshort_raw.wtv
+C:\Users\Public\Recorded TV\Sample Media
+C:\Users\Public\Recorded TV
+C:\Users\babis
+C:\Users\Classic .NET AppPool
+C:\Users\Administrator
+C:\Users\Public\jaws.ps1
+C:\Users\Public
+C:\Users\Public\jaws_out.txt
+
+-----------------------------------------------------------
+ MUICache Files
+-----------------------------------------------------------
+
+
+-----------------------------------------------------------
+ System Files with Passwords
+-----------------------------------------------------------
+
+-----------------------------------------------------------
+ AlwaysInstalledElevated Registry Key
+-----------------------------------------------------------
+
+-----------------------------------------------------------
+ Stored Credentials
+-----------------------------------------------------------
+
+Currently stored credentials:
+
+* NONE *
+
+-----------------------------------------------------------
+ Checking for AutoAdminLogon 
+-----------------------------------------------------------
+
+
