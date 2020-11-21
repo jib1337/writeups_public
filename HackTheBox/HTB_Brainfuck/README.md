@@ -893,7 +893,7 @@ orestis@brainfuck:~$ cat output.txt
 Encrypted Password: 44641914821074071930297814589851746700593470770417111804648920018396305246956127337150936081144106405284134845851392541080862652386840869768622438038690803472550278042463029816028777378141217023336710545449512973950591755053735796799773369044083673911035030605581144977552865771395578778515514288930832915182
 
 ```
-This is a basic application that uses sage to encrypt the root flag using RSA. In this instance, the user has been nice enough to leave behind a debug file, which contains the numbers for p, q and e and some ciphertext in output.txt. As long as those p/q/e values match up, the plaintext can be recovered.
+The sage script is encrypting the root flag using RSA. In this instance, the user has been nice enough to leave behind a debug file, which contains the numbers for p, q and e and the ciphertext in output.txt. As long as those p/q/e values match up, the plaintext can be recovered.
 
 ### 9. Recover the root hash
 
