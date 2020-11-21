@@ -39,7 +39,7 @@ OS and Service detection performed. Please report any incorrect results at https
 Nmap done: 1 IP address (1 host up) scanned in 207.20 seconds
 
 ```
-The machine is running Windows 8 with FTP and a web server. The FTP allows anonymous login, and an nmap script has gone ahead and listed available files. It appears to be a backup of what's on the web server.
+The machine is running Windows with FTP and a web server. The FTP allows anonymous login, and an nmap script has gone ahead and listed available files. It appears to be a backup of what's on the web server.
 
 ### 2. Check out the FTP
 Let's first login and get the FTP files.
