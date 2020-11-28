@@ -193,3 +193,6 @@ RID  : 000003e9 (1001)
 User : kostas
   Hash NTLM: fb7c6aab6468ef0383f97a12b78ab8ac
 ```
+
+### Notes
+I created my own HFS exploit (see hfsexploit.py) - it allows for any hosted binary to be uploaded and executed on machine with user-defined arguments.

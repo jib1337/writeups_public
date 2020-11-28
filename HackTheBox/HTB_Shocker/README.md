@@ -184,3 +184,7 @@ root@Shocker:~# whoami
 whoami
 root
 ```
+
+### Notes
+
+I made my own exploit tool for shellshock - see shocker.py.
