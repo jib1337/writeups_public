@@ -1,0 +1,6 @@
+setup.py
+jib1337/__init__.py
+jib1337.egg-info/PKG-INFO
+jib1337.egg-info/SOURCES.txt
+jib1337.egg-info/dependency_links.txt
+jib1337.egg-info/top_level.txt
