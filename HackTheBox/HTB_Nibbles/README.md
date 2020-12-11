@@ -86,7 +86,7 @@ by OJ Reeves (@TheColonial) & Christian Mehlmauer (@_FireFart_)
 2020/12/11 11:31:27 Finished
 ===============================================================
 ```
-When comparing these results with the github filelist, the content directory stands out. When browsing to it, it is listable and appears to be a backup of Nibbleblog's files, all of which are readable. Within the index of nibbleblog/content/private, there is a users.xml file with the following content:
+When comparing these results with the github filelist, the content directory stands out. When browsing to it, it is listable. Within the index of nibbleblog/content/private, there is a users.xml file with the following content:
 ```xml
 <users>
 <user username="admin">
