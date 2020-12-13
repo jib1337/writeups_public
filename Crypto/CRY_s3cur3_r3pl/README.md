@@ -11,7 +11,7 @@ References:
 - https://pequalsnp-team.github.io/cheatsheet/crypto-101
 - https://en.wikipedia.org/wiki/Length_extension_attack
   
-The page explains how the code is signed by concatentating the API key (the secret), together with some code which the user can input. This means of signing is vulnerable to a hash length extension attack in which the input to the hash can be extended to include new data, without needing to know what came before it.
+The page explains how the code is signed by joining the API key (the secret), together with some code which the user can input. This means of signing is vulnerable to a hash length extension attack in which the input to the hash can be extended to include new data, without needing to know what came before it.
 
 ```python
 #!/usr/bin/env python3
