@@ -261,7 +261,7 @@ phpLiteAdmin is subject to an RCE vulnerability, the details of which are (from 
 *phpliteadmin.php#1785: 'When you create a new database, the name you entered will be appended with the appropriate file extension (.db, .db3, .sqlite, etc.) if you do not include it yourself. The database will be created in the directory you specified as the $directory variable.',
 An Attacker can create a sqlite Database with a php extension and insert PHP Code as text fields. When done the Attacker can execute it simply by access the database file with the Webbrowser.*
   
-I can test the proof of concept, which runs the code displaying the PHP info page to test that it works. To access the file, I can set up a basic PHP webshell with the filename ninevehNotes.txt_shell.php and try to access it via the department page LFI.  
+Leveraging the vulnerability, I can set up a basic PHP webshell with the filename ninevehNotes.txt_shell.php and try to access it via the department page LFI.  
 Create the database:
 ```
 Database name: ninevehNotes.txt_shell.php
