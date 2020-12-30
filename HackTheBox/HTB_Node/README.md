@@ -134,3 +134,42 @@ PASSWORD FOUND!!!!: pw == magicword
 ```
 The backup file can now be unzipped, which recovers the source code to the entire application.
 
+### 4. Check out the source code
+Install and run the code auditing in retire.js:
+```bash─[us-dedivip-1]─[10.10.14.162]─[htb-jib1337@htb-afhzlzxoeo]─[~/var/www/myplace]
+└──╼ [★]$ sudo npm install -g retire
+
+added 43 packages, and audited 43 packages in 2s
+
+3 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+npm notice 
+npm notice New minor version of npm available! 7.1.0 -> 7.3.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v7.3.0
+npm notice Run npm install -g npm@7.3.0 to update!
+npm notice
+─[us-dedivip-1]─[10.10.14.162]─[htb-jib1337@htb-afhzlzxoeo]─[~/var/www/myplace]
+└──╼ [★]$ retire --colors
+retire.js v2.2.4
+Loading from cache: https://raw.githubusercontent.com/RetireJS/retire.js/master/repository/jsrepository.json
+Loading from cache: https://raw.githubusercontent.com/RetireJS/retire.js/master/repository/npmrepository.json
+/home/htb-jib1337/var/www/myplace/static/vendor/angular/angular-route.min.js
+ ↳ angularjs 1.6.5
+angularjs 1.6.5 has known vulnerabilities: severity: medium; summary: XSS may be triggered in AngularJS applications that sanitize user-controlled HTML snippets before passing them to JQLite methods like JQLite.prepend, JQLite.after, JQLite.append, JQLite.replaceWith, JQLite.append, new JQLite and angular.element., CVE: CVE-2020-7676; https://github.com/advisories/GHSA-5cp4-xmrw-59wf severity: medium; summary: angular.js prior to 1.8.0 allows cross site scripting. The regex-based input HTML replacement may turn sanitized code into unsanitized one., CVE: CVE-2020-7676; https://nvd.nist.gov/vuln/detail/CVE-2020-7676 severity: medium; summary: Prototype pollution; https://github.com/angular/angular.js/commit/726f49dcf6c23106ddaf5cfd5e2e592841db743a https://github.com/angular/angular.js/blob/master/CHANGELOG.md#179-pollution-eradication-2019-11-19 severity: low; summary: XSS through SVG if enableSvg is set; https://github.com/angular/angular.js/blob/master/CHANGELOG.md#169-fiery-basilisk-2018-02-02 https://vulnerabledoma.in/ngSanitize1.6.8_bypass.html
+/home/htb-jib1337/var/www/myplace/static/vendor/angular/angular.min.js
+ ↳ angularjs 1.6.5
+angularjs 1.6.5 has known vulnerabilities: severity: medium; summary: XSS may be triggered in AngularJS applications that sanitize user-controlled HTML snippets before passing them to JQLite methods like JQLite.prepend, JQLite.after, JQLite.append, JQLite.replaceWith, JQLite.append, new JQLite and angular.element., CVE: CVE-2020-7676; https://github.com/advisories/GHSA-5cp4-xmrw-59wf severity: medium; summary: angular.js prior to 1.8.0 allows cross site scripting. The regex-based input HTML replacement may turn sanitized code into unsanitized one., CVE: CVE-2020-7676; https://nvd.nist.gov/vuln/detail/CVE-2020-7676 severity: medium; summary: Prototype pollution; https://github.com/angular/angular.js/commit/726f49dcf6c23106ddaf5cfd5e2e592841db743a https://github.com/angular/angular.js/blob/master/CHANGELOG.md#179-pollution-eradication-2019-11-19 severity: low; summary: XSS through SVG if enableSvg is set; https://github.com/angular/angular.js/blob/master/CHANGELOG.md#169-fiery-basilisk-2018-02-02 https://vulnerabledoma.in/ngSanitize1.6.8_bypass.html
+/home/htb-jib1337/var/www/myplace/static/vendor/jquery/jquery.js
+ ↳ jquery 1.12.4
+jquery 1.12.4 has known vulnerabilities: severity: medium; issue: 2432, summary: 3rd party CORS request may execute, CVE: CVE-2015-9251; https://github.com/jquery/jquery/issues/2432 http://blog.jquery.com/2016/01/08/jquery-2-2-and-1-12-released/ https://nvd.nist.gov/vuln/detail/CVE-2015-9251 http://research.insecurelabs.org/jquery/test/ severity: medium; CVE: CVE-2015-9251, issue: 11974, summary: parseHTML() executes scripts in event handlers; https://bugs.jquery.com/ticket/11974 https://nvd.nist.gov/vuln/detail/CVE-2015-9251 http://research.insecurelabs.org/jquery/test/ severity: low; CVE: CVE-2019-11358, summary: jQuery before 3.4.0, as used in Drupal, Backdrop CMS, and other products, mishandles jQuery.extend(true, {}, ...) because of Object.prototype pollution; https://blog.jquery.com/2019/04/10/jquery-3-4-0-released/ https://nvd.nist.gov/vuln/detail/CVE-2019-11358 https://github.com/jquery/jquery/commit/753d591aea698e57d6db58c9f722cd0808619b1b severity: medium; CVE: CVE-2020-11022, summary: Regex in its jQuery.htmlPrefilter sometimes may introduce XSS; https://blog.jquery.com/2020/04/10/jquery-3-5-0-released/ severity: medium; CVE: CVE-2020-11023, summary: Regex in its jQuery.htmlPrefilter sometimes may introduce XSS; https://blog.jquery.com/2020/04/10/jquery-3-5-0-released/
+/home/htb-jib1337/var/www/myplace/static/vendor/jquery/jquery.min.js
+ ↳ jquery 1.12.4
+jquery 1.12.4 has known vulnerabilities: severity: medium; issue: 2432, summary: 3rd party CORS request may execute, CVE: CVE-2015-9251; https://github.com/jquery/jquery/issues/2432 http://blog.jquery.com/2016/01/08/jquery-2-2-and-1-12-released/ https://nvd.nist.gov/vuln/detail/CVE-2015-9251 http://research.insecurelabs.org/jquery/test/ severity: medium; CVE: CVE-2015-9251, issue: 11974, summary: parseHTML() executes scripts in event handlers; https://bugs.jquery.com/ticket/11974 https://nvd.nist.gov/vuln/detail/CVE-2015-9251 http://research.insecurelabs.org/jquery/test/ severity: low; CVE: CVE-2019-11358, summary: jQuery before 3.4.0, as used in Drupal, Backdrop CMS, and other products, mishandles jQuery.extend(true, {}, ...) because of Object.prototype pollution; https://blog.jquery.com/2019/04/10/jquery-3-4-0-released/ https://nvd.nist.gov/vuln/detail/CVE-2019-11358 https://github.com/jquery/jquery/commit/753d591aea698e57d6db58c9f722cd0808619b1b severity: medium; CVE: CVE-2020-11022, summary: Regex in its jQuery.htmlPrefilter sometimes may introduce XSS; https://blog.jquery.com/2020/04/10/jquery-3-5-0-released/ severity: medium; CVE: CVE-2020-11023, summary: Regex in its jQuery.htmlPrefilter sometimes may introduce XSS; https://blog.jquery.com/2020/04/10/jquery-3-5-0-released/
+/home/htb-jib1337/var/www/myplace/static/vendor/bootstrap/js/bootstrap.js
+ ↳ bootstrap 3.3.7
+bootstrap 3.3.7 has known vulnerabilities: severity: high; issue: 28236, summary: XSS in data-template, data-content and data-title properties of tooltip/popover, CVE: CVE-2019-8331; https://github.com/twbs/bootstrap/issues/28236 severity: medium; issue: 20184, summary: XSS in data-target property of scrollspy, CVE: CVE-2018-14041; https://github.com/twbs/bootstrap/issues/20184 severity: medium; issue: 20184, summary: XSS in collapse data-parent attribute, CVE: CVE-2018-14040; https://github.com/twbs/bootstrap/issues/20184 severity: medium; issue: 20184, summary: XSS in data-container property of tooltip, CVE: CVE-2018-14042; https://github.com/twbs/bootstrap/issues/20184
+/home/htb-jib1337/var/www/myplace/static/vendor/bootstrap/js/bootstrap.min.js
+ ↳ bootstrap 3.3.7
+bootstrap 3.3.7 has known vulnerabilities: severity: high; issue: 28236, summary: XSS in data-template, data-content and data-title properties of tooltip/popover, CVE: CVE-2019-8331; https://github.com/twbs/bootstrap/issues/28236 severity: medium; issue: 20184, summary: XSS in data-target property of scrollspy, CVE: CVE-2018-14041; https://github.com/twbs/bootstrap/issues/20184 severity: medium; issue: 20184, summary: XSS in collapse data-parent attribute, CVE: CVE-2018-14040; https://github.com/twbs/bootstrap/issues/20184 severity: medium; issue: 20184, summary: XSS in data-container property of tooltip, CVE: CVE-2018-14042; https://github.com/twbs/bootstrap/issues/20184
