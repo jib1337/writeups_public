@@ -87,6 +87,7 @@ local: Access Control.zip remote: Access Control.zip
 ftp> exit
 221 Goodbye.
 ```
+Two files were pulled from the ftp: "Access Control.zip" and backup.mdb.
 
 ### 3. Look at the files
 Checking out the files, the zip file is encrypted with a password.
