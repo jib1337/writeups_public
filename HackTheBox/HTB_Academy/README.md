@@ -1,4 +1,4 @@
-## Academy | HackTheBox
+# Academy | HackTheBox
 
 ### 1. Scan
 ```bash
