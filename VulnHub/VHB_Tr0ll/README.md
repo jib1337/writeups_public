@@ -1,4 +1,4 @@
-# Pwnlab: Init | VulnHub
+# Tr0ll | VulnHub
 https://www.vulnhub.com/entry/tr0ll-1,100/
 
 ### 1. Scan
@@ -111,7 +111,7 @@ LIST
 QUIT
 221 Goodbye.
 ```
-The data of this file is also shown in the capture as follows:
+The data of this file is also shown in the capture as follows:  
 *Well, well, well, aren't you just a clever little devil, you almost found the sup3rs3cr3tdirlol :-P
 Sucks, you were so close... gotta TRY HARDER!*
 
