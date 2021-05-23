@@ -112,7 +112,7 @@ Retrieving the amportal.conf file (as done in the proof of concept) is great bec
 - Asterisk portal: `admin:jEhdIekWmdjE`
 - Flash operator panel password: `jEhdIekWmdjE`
 - ARI admin password: `jEhdIekWmdjE`  
-It is clear there is heavy credential use on the machine. Knowing this, and knowing the webmin portal allows access to an admin user with the username root (by default), I can attempt to use this password to log in.
+It is clear there is heavy credential reuse on the machine. Knowing this, and knowing the webmin portal allows access to an admin user with the username root (by default), I can attempt to use this password to log in.
 
 ### 4. Get a shell
 With the credentials `root:jEhdIekWmdjE` I can log into the webmin panel, which ends up giving me root access to the machine. I can do everything, including use a web command shell where I can verify I am root. Additionally I can SSH into the machine, after specifying a supported algorithm.
