@@ -1,4 +1,4 @@
-# Active | HackTheBox
+# SecNotes | HackTheBox
 
 ### 1. Scan
 ```bash
