@@ -193,7 +193,7 @@ OS and Service detection performed. Please report any incorrect results at https
 ```
 The machine is running SSH, FTP with anonymous access enabled, two HTTP servers on 80 and 8443 and SMB.
 
-### 2. Check out FTP.
+### 2. Check out FTP
 Use wget to mirror everything on FTP.
 ```bash
 ┌──(kali㉿kali)-[10.10.14.31]-[~/Desktop]
