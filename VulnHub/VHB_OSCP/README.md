@@ -91,7 +91,7 @@ Read data files from: /usr/bin/../share/nmap
 OS and Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
 # Nmap done at Thu Jun  3 04:43:52 2021 -- 1 IP address (1 host up) scanned in 31.16 seconds
 ```
-The machine is linux, running SSH and an Apache Web Server. NMap has managed to geet the Wordpress version from one of the scripts. Additionally there is an unknown service running on a high port.
+The machine is linux, running SSH and an Apache Web Server. Nmap has managed to get the Wordpress version. Additionally there is an unknown service running on a high port.
 
 ### 2. Enumeration
 Go straight to the homepage and read what it has to say. Note that the wordpress version is pretty new, and running wpscan confirms that it is fairly well configured with not much of an attack surface.
@@ -101,7 +101,7 @@ The homepage reads:
 In order to enter the give away, you must obtain the root flag  located in /root/. Once you’ve obtained the flag, message the TryHarder  bot with the command !flag <insert flag>. It will then validate  the flag for verification. Should it be incorrect, it will let you know.  If it’s correct, you will be given a new role on the server where you  can chat with others in a private channel. Once you’ve received the role  you are entered into the give away!
 You must be a member of the server in order to use the command above. 
 For those downloading this box off vulnhub at a later time, the command above will no longer be available.  
-Oh yea! Almost forgot the only user on this box is “oscp”. 
+Oh yea! Almost forgot the only user on this box is “oscp”.  
 A big thank you to Offensive Security for providing the voucher.
 Happy Hunting
 -FalconSpy & InfoSec Prep Discord Server*
