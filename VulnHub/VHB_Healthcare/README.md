@@ -1,5 +1,5 @@
 # Healthcare | VulnHub
-https://www.vulnhub.com/entry/infosec-prep-oscp,508/
+https://www.vulnhub.com/entry/healthcare-1,522/
 
 ### 1. Scan
 ```bash
