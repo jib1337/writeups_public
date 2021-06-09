@@ -145,7 +145,7 @@ With the XE SID recovered, run a wordlist against it.
 [+] Accounts found on 10.129.1.168:1521/sid:XE: 
 scott/tiger
 ```
-Valid default creds were found: `scott:tiger`. With these it will be possible
+Valid default creds were found: `scott:tiger`. These can be leveraged to further interact with the system.
 
 ### 3. Get a shell
 Reference: https://infinitelogins.com/2020/12/03/pentesting-oracle-databases-with-odat/  
