@@ -365,7 +365,7 @@ The Linux version 4.10.0-28 of Ubuntu 16.04.
 www-data@ubuntu:/tmp$ uname -a
 Linux ubuntu 4.10.0-28-generic #32~16.04.2-Ubuntu SMP Thu Jul 20 10:19:48 UTC 2017 x86_64 x86_64 x86_64 GNU/Linux
 ```
-Exploits for this kernal do exist, including one that specifies the OS. This is a good bet.  
+Exploits for this kernel do exist, including one that specifies the OS. This is a good bet.  
 URL: https://www.exploit-db.com/exploits/45010
 ```bash
 ┌──(kali㉿kali)-[]-[~/Desktop/CVE-2021-3156-main]
