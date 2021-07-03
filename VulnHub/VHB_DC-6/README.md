@@ -1,4 +1,4 @@
-# DC6 | VulnHub
+# DC-6 | VulnHub
 https://www.vulnhub.com/entry/dc-6,315/
 
 ### 1. Scan
